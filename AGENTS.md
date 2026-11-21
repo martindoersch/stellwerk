@@ -72,6 +72,7 @@ Ergebnis: **Fertige Lösung gibt es keine.** Einen Ersatz-Hub, der MIDI- oder To
 | `bridge/stellwerk.swift` | **Bridge-Prototyp** Loupedeck+ → Capture One (`swift stellwerk.swift`, vor Capture One starten); Belegung in `bridge/mappings/loupedeck-plus-captureone.json` |
 | `bridge/fake_captureone.py` | Test-Client, spielt Capture One gegenüber der Bridge |
 | `bridge/parse_controls.py` | Wertet Capture Ones `controls.xml` aus → `docs/capture-one-controls.md` + `bridge/mappings/capture-one-controls.json` |
+| `app/` | **Menüleisten-App** (Xcode-Projekt `Stellwerk.xcodeproj`, Bundle-ID `MD.Stellwerk`, keine Sandbox): `Core/` (Engine, Mapping), `Input/` (MIDI), `Output/` (Tangent-Hub, Tasten/Event-Tap), `UI/`. Belegungen in `app/Stellwerk/Mappings/` (Vorgabe im Bundle), überschreibbar in `~/Library/Application Support/Stellwerk/Mappings/` |
 | `bridge/fake_tangent_hub.py` | Prototyp: Test-Hub für Capture One (nur Python-Standardbibliothek), interaktiv über das Terminal |
 
 ## Entscheidungen
