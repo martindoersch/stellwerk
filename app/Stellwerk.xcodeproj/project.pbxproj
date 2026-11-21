@@ -231,20 +231,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5E000000000000000000000B /* Build configuration list for PBXProject "Stellwerk" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				5E000000000000000000000C /* Debug */,
-				5E000000000000000000000D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		5E0000000000000000000007 /* Build configuration list for PBXNativeTarget "Stellwerk" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5E000000000000000000000E /* Debug */,
 				5E000000000000000000000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5E000000000000000000000B /* Build configuration list for PBXProject "Stellwerk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E000000000000000000000C /* Debug */,
+				5E000000000000000000000D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

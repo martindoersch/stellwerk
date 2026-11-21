@@ -11,6 +11,12 @@ struct StellwerkApp: App {
             Image(systemName: engine.hubState.isConnected ? "dial.medium.fill" : "dial.medium")
         }
         .menuBarExtraStyle(.window)
+
+        Window("Stellwerk – Einstellungen", id: "settings") {
+            SettingsView(engine: engine)
+        }
+        .windowResizability(.contentSize)
+        .defaultLaunchBehavior(.suppressed)   // nicht beim Start öffnen
     }
 }
 

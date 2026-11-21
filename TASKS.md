@@ -58,6 +58,9 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 - [x] **Version 0.1** (2026-11-21): Xcode-Projekt `app/`, Prototyp portiert (MIDI, Tangent-Hub, Menü-Kürzel, Modus-Tasten, SW-Ebene, Modifier + Event-Tap, Fein/Grob, Beschleunigung). Statusmenü: Verbindungen, Bedienungshilfen, Modus, Belichtung, letzte Aktion, Belegung neu laden, Ordner, Autostart. Baut ohne Warnungen
 - [x] v0.1 von Martin getestet ✅ (2026-11-21): läuft mit Loupedeck+ und Capture One
+- [x] **Version 0.2** (2026-11-21): Einstellungsfenster. *Drehregler:* Geschwindigkeit, Beschleunigung (0 = aus), Fein/Grob-Faktoren. *Tasten:* jede Taste auf Vorgabe / Capture-One-Aktion (Suchliste) / eigenes Tastenkürzel (Aufnahme) / aus. Gespeichert als Überlagerung in `~/Library/Application Support/Stellwerk/settings.json`, Vorgabe bleibt unangetastet
+- [ ] **Martin:** v0.2 testen
+- [ ] Danach: Modus-Einblendung beim Umschalten; ganz zum Schluss Custom Mode (zweite Belegung)
 - [ ] Belegungsdateien: `app/Stellwerk/Mappings/` ist jetzt die Hauptquelle; `bridge/mappings/` nur noch für den Prototyp
 
 - [ ] Kern nach `ARCHITEKTUR.md`: Control-Ereignis, Aktions-Vokabular, Mapping-Format, Feedback-Bus, aktive App erkennen

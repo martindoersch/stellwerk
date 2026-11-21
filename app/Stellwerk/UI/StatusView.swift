@@ -7,6 +7,7 @@ extension Color {
 
 struct StatusView: View {
     @Bindable var engine: Engine
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -55,7 +56,12 @@ struct StatusView: View {
                 .toggleStyle(.switch).controlSize(.small).tint(.lime)
 
             HStack {
-                Button("Belegung neu laden") { engine.reloadMappings() }
+                Button("Einstellungen …") {
+                    openWindow(id: "settings")
+                    NSApp.activate()
+                }
+                Button("Neu laden") { engine.reloadMappings() }
+                    .help("Belegungsdateien neu einlesen")
                 Button("Ordner") { engine.openMappingFolder() }
                     .help("Belegungsdateien zum Bearbeiten öffnen")
                 Spacer()

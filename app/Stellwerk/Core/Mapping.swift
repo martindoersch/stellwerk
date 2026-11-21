@@ -50,7 +50,7 @@ enum MappingStore {
 
 // MARK: - Capture-One-Katalog
 
-struct C1Control { let name: String; let isParam: Bool; let step: Double }
+struct C1Control { let name: String; let isParam: Bool; let step: Double; var group = "" }
 
 struct Catalog {
     var items: [UInt32: C1Control] = [:]
@@ -68,12 +68,18 @@ struct Catalog {
                 guard let idStr = i["id"] as? String, let id = hexID(idStr), let name = i["name"] as? String else { continue }
                 let display = (counts[name] ?? 0) > 1 ? "\(g["name"] as? String ?? "") \(name)" : name
                 items[id] = C1Control(name: display, isParam: i["kind"] as? String == "parameter",
-                                      step: i["step"] as? Double ?? 0.1)
+                                      step: i["step"] as? Double ?? 0.1, group: g["name"] as? String ?? "")
             }
         }
     }
 
     func name(_ id: UInt32) -> String { items[id]?.name ?? hexStr(id) }
+
+    /// Alle auslösbaren Aktionen (keine Regler), nach Gruppe und Name sortiert
+    var actions: [(id: UInt32, control: C1Control)] {
+        items.filter { !$0.value.isParam }.map { (id: $0.key, control: $0.value) }
+            .sorted { ($0.control.group, $0.control.name) < ($1.control.group, $1.control.name) }
+    }
 }
 
 // MARK: - Geräteprofil
@@ -82,6 +88,7 @@ struct DeviceProfile {
     var device = "Loupedeck+"
     var dialByCC: [Int: String] = [:]
     var nameByNote: [Int: String] = [:]   // Tasten und Drücken der Drehregler
+    var buttons: [String] = []            // echte Tasten, in sinnvoller Reihenfolge
 
     init() {}
 
@@ -91,6 +98,11 @@ struct DeviceProfile {
         // Drücken eines Drehreglers sendet die Note mit seiner CC-Nummer; echte Tasten haben Vorrang
         for (name, c) in controls { if let cc = c["cc"] as? Int { dialByCC[cc] = name; nameByNote[cc] = name } }
         for (name, c) in controls { if let note = c["note"] as? Int { nameByNote[note] = name } }
+        let order = ["Undo", "Redo", "Copy", "Paste", "Before/After", "Export", "Screen Mode", "Custom Mode"]
+            + (1...8).map { "P\($0)" } + (1...6).map { "C\($0)" } + ["L1", "L2", "L3", "Hue", "Sat", "Lum", "Clr/BW"]
+            + ["Pfeil links", "Pfeil rechts", "Pfeil oben", "Pfeil unten"]
+        let names = controls.filter { $0.value["note"] != nil }.map(\.key)
+        buttons = order.filter(names.contains) + names.filter { !order.contains($0) }.sorted()
     }
 }
 
@@ -144,6 +156,26 @@ enum Keys {
 
 struct DialBinding { var param: UInt32?; var perTick: Double; var plus: UInt32?; var minus: UInt32? }
 struct Accel { var fastMs = 20.0, fastFactor = 4.0, mediumMs = 45.0, mediumFactor = 2.0 }
+
+/// Lesbare Form eines Tastenkürzels: "cmd+shift+z" → "⇧⌘Z"
+func prettyKeys(_ s: String) -> String {
+    var mods = "", key = ""
+    for part in s.lowercased().split(separator: "+").map(String.init) {
+        switch part {
+        case "ctrl": mods = "⌃" + mods
+        case "alt", "opt": mods += "⌥"
+        case "shift": mods += "⇧"
+        case "cmd": mods += "⌘"
+        default:
+            let sym = ["left": "←", "right": "→", "up": "↑", "down": "↓", "return": "↩", "tab": "⇥",
+                       "space": "Leertaste", "delete": "⌫", "esc": "⎋"]
+            key = sym[part] ?? part.uppercased()
+        }
+    }
+    // Reihenfolge wie bei Apple: ⌃⌥⇧⌘
+    let ordered = ["⌃", "⌥", "⇧", "⌘"].filter(mods.contains).joined()
+    return ordered + key
+}
 enum ButtonBinding { case action(UInt32), keys(KeyCombo) }
 
 struct Mapping {
@@ -151,6 +183,7 @@ struct Mapping {
     var dials: [String: DialBinding] = [:]
     var buttons: [String: ButtonBinding] = [:]
     var accel = Accel()
+    var speed = 1.0
 
     // Fein/Grob (wie Photoshop: Alt = fein, Shift = grob)
     var fineFactor = 0.2

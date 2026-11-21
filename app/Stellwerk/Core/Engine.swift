@@ -21,11 +21,13 @@ final class Engine {
     var warnings: [String] = []
     var values: [UInt32: Float] = [:]
     var launchAtLogin = SMAppService.mainApp.status == .enabled
+    private(set) var settings = UserSettings.load()
 
     // MARK: Bausteine
     private(set) var catalog = Catalog()
     private(set) var profile = DeviceProfile()
     private(set) var mapping = Mapping()
+    private(set) var defaultMapping = Mapping()   // mitgelieferte Belegung ohne persönliche Änderungen
     private let midi = MIDIInput(match: "Loupedeck")
     private let hub = TangentHub()
     private let keys = KeyOutput()
@@ -76,8 +78,9 @@ final class Engine {
         else { warnings.append("capture-one-controls.json fehlt") }
         if let p = MappingStore.load("loupedeck-plus.json") { profile = DeviceProfile(json: p) }
         else { warnings.append("loupedeck-plus.json fehlt – Gerät anlernen") }
-        if let m = MappingStore.load("loupedeck-plus-captureone.json") { mapping = Mapping(json: m, catalog: catalog) }
+        if let m = MappingStore.load("loupedeck-plus-captureone.json") { defaultMapping = Mapping(json: m, catalog: catalog) }
         else { warnings.append("loupedeck-plus-captureone.json fehlt oder ist kein gültiges JSON") }
+        mapping = defaultMapping.applying(settings)
         warnings += mapping.warnings
         keyMode = .stars
         bwActive = false
@@ -101,6 +104,35 @@ final class Engine {
     }
 
     func refreshAccessibility() { accessibilityOK = Accessibility.isTrusted }
+
+    // MARK: Einstellungen
+
+    /// Ändert die Einstellungen, speichert sie und macht sie sofort wirksam
+    func updateSettings(_ change: (inout UserSettings) -> Void) {
+        var s = settings
+        change(&s)
+        guard s != settings else { return }
+        settings = s
+        s.save()
+        mapping = defaultMapping.applying(s)
+    }
+
+    func describe(_ b: ButtonBinding?) -> String {
+        switch b {
+        case .action(let a)?: return catalog.name(a)
+        case .keys(let k)?: return prettyKeys(k.text)
+        case nil: return "–"
+        }
+    }
+
+    /// Tasten mit fester Sonderfunktion (in den Einstellungen nicht frei belegbar)
+    func specialRole(_ name: String) -> String? {
+        if name == mapping.modeToggle { return "Umschalter Sterne/Farben (Fn: Tasten)" }
+        if name == mapping.fnKey { return "Fn (in Kombination)" }
+        if name == mapping.bwToggle { return "Schwarzweiß + Farbregler umschalten" }
+        if mapping.modeKeys.contains(name) { return "Stern/Farbe/Taste je nach Modus" }
+        return nil
+    }
 
     private func log(_ s: String) {
         lastAction = s
@@ -145,7 +177,7 @@ final class Engine {
         lastTick[name] = now
         let acc = mapping.accel
         let factor = ms < acc.fastMs ? acc.fastFactor : ms < acc.mediumMs ? acc.mediumFactor : 1
-        hub.change(p, by: Float(Double(ticks) * b.perTick * factor * modifierFactor()))
+        hub.change(p, by: Float(Double(ticks) * b.perTick * mapping.speed * factor * modifierFactor()))
         lastAction = catalog.name(p)
     }
 
