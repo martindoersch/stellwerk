@@ -32,7 +32,9 @@ Software-Surface ┘  (Touch/Maus, Web)     „Belichtung +0,05“            �
 - Capture One verbindet sich als Client mit `127.0.0.1:64246` (dort lauscht normalerweise der Tangent Hub).
 - **Unsere Bridge spielt den Hub.** Capture One meldet sich mit `ApplicationDefinition` an und beantwortet Wertabfragen.
 - Einstellung: `defaults write com.captureone.captureone16 TangentDeviceSupportEnableDefaultsKey -bool true` (in den Capture-One-Einstellungen sichtbar als Tangent-Unterstützung)
-- Regler-Liste: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml` (63 Parameter, z. B. Belichtung `0x26`, Kelvin `0x01`, Tint `0x03`, außerdem Aktionen)
+- Regler-Liste: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml`, ausgewertet in **`docs/capture-one-controls.md`** (63 Regler, 429 Aktionen, nur ein Modus „Default")
+- Wichtigste IDs: Regler: Belichtung `0x26`, Kelvin `0x01`, Tint `0x03`, Kontrast `0x28`, Sättigung `0x2C`, Lichter `0x2E`, Schatten `0x30`, Weiß `0x250`, Schwarz `0x251`, Klarheit `0x32`, Struktur `0x33`. Aktionen: nächstes/voriges Bild `0x8E`/`0x8D`, Sterne 0–5 `0x106`, `0x101`–`0x105`, Farbmarkierung `0x107`–`0x10E`, Zurücksetzen `0x112`, Anpassungen kopieren/anwenden `0xFC`/`0xFD`, Vorher/Nachher `0x252`, Auto `0x111`, Zoom einpassen/100 % `0xC4`/`0xC5`. **Undo fehlt** in der Liste
+- Im selben Ordner liegen Tangents Standardbelegungen (`element-*-map.xml`, `wave-map.xml`, `ripple-map.xml`): Vorlage dafür, welche Regler auf ein Panel gehören
 - Format: Big Endian, Nachricht = `uint32 Länge` + Body; Body = `uint32 Befehl` + Daten; Strings = `uint32 Länge` + Bytes
 - Wichtige Befehle Hub→App: `0x01` InitiateComms, `0x02` ParameterChange (id, float delta), `0x03` Reset, `0x04` ValueRequest, `0x08`/`0x0B` ActionOn/Off, `0x09` ModeChange
 - App→Hub: `0x81` ApplicationDefinition, `0x82` ParameterValue (id, float, bool default), `0x85` ModeValue, `0x86` DisplayText
@@ -67,6 +69,7 @@ Ergebnis: **Fertige Lösung gibt es keine.** Einen Ersatz-Hub, der MIDI- oder To
 | `bridge/midi_monitor.swift` | MIDI-Mitschreiber (`swift midi_monitor.swift [Gerät]`) |
 | `bridge/learn_loupedeck.swift` | Geführtes Anlernen des Loupedeck+ mit Sprachansage → `bridge/mappings/loupedeck-plus.json` |
 | `ARCHITEKTUR.md` | Schichten, Datenmodell, Erweiterbarkeit |
+| `bridge/parse_controls.py` | Wertet Capture Ones `controls.xml` aus → `docs/capture-one-controls.md` + `bridge/mappings/capture-one-controls.json` |
 | `bridge/fake_tangent_hub.py` | Prototyp: Test-Hub für Capture One (nur Python-Standardbibliothek), interaktiv über das Terminal |
 
 ## Entscheidungen

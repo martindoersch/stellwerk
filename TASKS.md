@@ -17,8 +17,10 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 - [x] Schreiben verifiziert: Belichtung 0 → 0,1 → 0,2 → 0,1 → 0, Capture One meldet jeden Wert zurück ✅
 - [x] Wiederverbinden geprüft: Capture One verbindet sich **nur beim Start** → Bridge muss vor Capture One laufen (oder Capture One neu starten). Später: Bridge startet beim Login
-- [ ] `controls.xml` komplett auswerten: alle Parameter-IDs **und Aktions-IDs** (nächstes Bild, Bewertung, Zurücksetzen …) als Tabelle
-- [ ] Modi testen (`ModeChange` / `ModeValue`), z. B. pro Werkzeug
+- [x] `controls.xml` komplett ausgewertet: `bridge/parse_controls.py` erzeugt `docs/capture-one-controls.md` (Tabelle) und `bridge/mappings/capture-one-controls.json`. **63 Regler, 429 Aktionen, 34 Gruppen.** Nach Capture-One-Updates neu laufen lassen und per `git diff` prüfen
+- [ ] **Undo fehlt** in `controls.xml` (Redo `0x78` ist da). Mit dem Test-Hub `ActionOn 0x77` probieren; sonst Undo über AppleScript oder Tastenkürzel
+- [ ] Doppelte Aktionen klären: z. B. Copy Adjustments `0xFC` (Adjustments) und `0x16C` (Cursor Tools), Rotate Left `0xF9` und `0x158`. Welche macht was?
+- [ ] Modi: Capture One meldet nur **einen** Modus („Default", `0x00010001`). Modi pro Werkzeug muss also die Bridge selbst verwalten (Ebenen im Mapping), nicht Capture One. Kurz testen, ob `ModeChange` trotzdem etwas bewirkt
 - [ ] Verhalten klären: Welcher Wert gilt bei mehreren ausgewählten Bildern? Was passiert ohne geöffnetes Bild?
 - [ ] AppleScript-Wörterbuch von Capture One ansehen: Welche Regler fehlen in `controls.xml`, sind aber per AppleScript erreichbar (z. B. Drehen, Keystone)? Als Ergänzung für Tasten, nicht für Drehregler
 
