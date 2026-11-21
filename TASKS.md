@@ -31,6 +31,13 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Mapping-Datei (JSON/YAML): Loupedeck-Regler → Capture-One-Parameter, Tasten → Aktionen
 - [ ] Bridge-Prototyp: MIDI rein → Tangent-ParameterChange raus (Beschleunigung bei schnellem Drehen)
 
+## Phase 2b — Software-Surface (früh, als Testwerkzeug)
+
+- [ ] Web-Oberfläche (Touch/Maus) von der Bridge ausgeliefert, Regler + Tasten, zeigt Werte aus Capture One live
+- [ ] Spricht schon das externe Adapter-Protokoll (WebSocket, JSON) → legt das Format praktisch fest
+- [ ] Vorher kurz TouchOSC/OSC prüfen: fertige Oberfläche statt Eigenbau?
+- [ ] Grundsatz: nur für Martin bauen, klein starten, aber nichts verbauen (neutrale Aktionen, Adapter austauschbar)
+
 ## Phase 3 — TourBox Elite Plus nativ
 
 - [ ] BLE-Protokoll anhand des Community-Gists (AndyCappDev, „TourBox Elite BLE Protocol") prüfen
@@ -43,7 +50,6 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Kern nach `ARCHITEKTUR.md`: Control-Ereignis, Aktions-Vokabular, Mapping-Format, Feedback-Bus, aktive App erkennen
 - [ ] Swift-Protokolle `InputAdapter` / `OutputAdapter` mit Capabilities
 - [ ] Externes Adapter-Protokoll (lokaler WebSocket, JSON) festlegen; OSC als Alternative prüfen
-- [ ] **Software-Surface**: Web-Oberfläche (Touch/Maus) von der Bridge ausgeliefert, zeigt Werte live — auch als Testwerkzeug ohne Hardware
 - [ ] Tangent-Hub-Server in Swift (Network-Framework), MIDI über CoreMIDI
 - [ ] Menüleiste: Verbindungsstatus pro Gerät und App, Mapping wählen; Markenfarbe Lime `#C7D300`
 - [ ] Autostart, Code-Signierung
