@@ -2,6 +2,10 @@
 
 Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
+## Als Nächstes (Martin, 2026-11-21)
+
+- [ ] **Programmprofile ausbauen und im Alltag testen.** Grundlage steht: Modus „Im aktiven Programm“, Profile pro Gerät, Kürzel für Tasten und Drehregler, Menüeintrag neben jedem Kürzel. Zu klären: welche Programme zuerst (Photoshop? Premiere? Finder?), sinnvolle Vorgaben je Programm, ob Drehregler mehr als Kürzel brauchen (z. B. Scrollen, Pinselgröße)
+
 ## Erledigt
 
 - [x] Universelle Architektur festgehalten (`ARCHITEKTUR.md`): Eingabe-Adapter inkl. Software-Surface, semantische Aktionen, Mapping, Feedback, externe Adapter
