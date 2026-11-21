@@ -420,7 +420,30 @@ func modifierFactor() -> Double {
     return 1
 }
 
-func release(_ name: String) { held.remove(name) }
+// Modifier-Modus: Loupedeck-Tasten wirken als echte Tastatur-Tasten (an die App im Vordergrund)
+let realKeyCodes: [String: (code: CGKeyCode, flag: CGEventFlags?)] = [
+    "Shift": (56, .maskShift), "Ctrl": (59, .maskControl), "Cmd": (55, .maskCommand),
+    "Alt": (58, .maskAlternate), "Tab": (48, nil)]
+var realDown = Set<String>()   // Tasten, die wir gerade als gedrückt gemeldet haben
+
+func postRealKey(_ name: String, down: Bool) {
+    guard let k = realKeyCodes[name] else { return }
+    if down { realDown.insert(name) } else { realDown.remove(name) }
+    var flags: CGEventFlags = []
+    for n in realDown { if let f = realKeyCodes[n]?.flag { flags.insert(f) } }
+    let e = CGEvent(keyboardEventSource: CGEventSource(stateID: .hidSystemState), virtualKey: k.code, keyDown: down)
+    if k.flag != nil { e?.type = .flagsChanged }
+    e?.flags = flags
+    e?.post(tap: .cghidEventTap)
+}
+
+/// Beim Beenden nichts „hängen" lassen
+func releaseAllRealKeys() { for n in realDown { postRealKey(n, down: false) } }
+
+func release(_ name: String) {
+    held.remove(name)
+    if realDown.contains(name) { postRealKey(name, down: false) }
+}
 
 extension Array { subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil } }
 
@@ -439,7 +462,8 @@ func press(_ name: String) {
         case .colors:
             if let a = fn ? colorsClear : colorIDs[safe: i] { print("→ \(name): \(c1Name(a))"); hub.action(a) }
         case .modifiers:
-            if name == "Alt" { print("   Alt gehalten: fein") } else if name == "Shift" { print("   Shift gehalten: grob") }
+            print("⌨️  \(name)\(name == "Alt" ? " (Drehen fein)" : name == "Shift" ? " (Drehen grob)" : "")")
+            postRealKey(name, down: true)
         }
         return
     }
@@ -505,7 +529,7 @@ Thread {
         guard let c = parts.first else { continue }
         core.async {
             switch c {
-            case "q": exit(0)
+            case "q": releaseAllRealKeys(); exit(0)
             case "l":
                 for (n, b) in dials.sorted(by: { $0.key < $1.key }) {
                     print("  Regler \(n) → \(b.param.map(c1Name) ?? "\(b.plus.map(c1Name) ?? "") / \(b.minus.map(c1Name) ?? "")")")

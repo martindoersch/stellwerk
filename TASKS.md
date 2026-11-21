@@ -36,7 +36,8 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Belegung `bridge/mappings/loupedeck-plus-captureone.json`: Beschriftung → Capture-One-Regler/-Aktion/Tastenkürzel, `perTick` pro Regler, Beschleunigung einstellbar
 - [x] Bridge-Prototyp `bridge/stellwerk.swift` (Swift, CoreMIDI + Network): MIDI rein → Tangent raus, Beschleunigung, Deltas alle 15 ms gebündelt, Drücken = zurücksetzen, Startwerte abfragen, Simulation übers Terminal. **Mit echtem Capture One getestet** ✅ (Regler, Reset, Aktionen), Test-Client `bridge/fake_captureone.py`
 - [x] Echte Regler getestet (2026-11-21): **Empfindlichkeit perfekt**, mehrere Regler gleichzeitig drehen funktioniert („WOW") ✅. Copy `0xFC` ✅. Paste `0xFD` öffnete Dialog „Anpassungen einfügen" und hing → jetzt Menü ⇧⌘V (testen; Alternative `0x16D`)
-- [ ] Prototyp testen: Alt/⌥ = fein, Shift/⇧ = grob (Mac-Tastatur + Loupedeck im Modifier-Modus); `--/Clr` = Sterne ↔ Farben, Fn + `--/Clr` = Modifier-Modus, Fn + Taste = löschen
+- [x] Getestet ✅: Alt/⌥ = fein, Shift/⇧ = grob; `--/Clr` = Sterne ↔ Farben, Fn + `--/Clr` = Modifier-Modus, Fn + Taste = löschen; Paste über Menü ⇧⌘V
+- [ ] Modifier-Modus: Loupedeck-Tasten Shift/Ctrl/Cmd/Alt/Tab senden jetzt **echte Tasten** (Martin: Standard-Tasten wichtiger als Fein/Grob, beides zusammen ok). Testen, ob gehaltenes Shift/Cmd auch mit Maus-Klicks wirkt
 - [ ] Belegung für die 8 Farbregler und P1–P8/C1–C6 überlegen (Capture One hat über Tangent kein HSL pro Farbe → Color Balance? Ebenen?)
 
 ## Phase 2b — Software-Surface (früh, als Testwerkzeug)
@@ -62,7 +63,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Menüleiste: Verbindungsstatus pro Gerät und App, Mapping wählen; Markenfarbe Lime `#C7D300`
 - [ ] **Wünsche aus dem Praxistest (2026-11-21):**
   - Drehgeschwindigkeit einstellbar machen, mit Beschleunigungskurve („Ramp": schneller drehen = größere Schritte)
-  - Fein/Grob per Modifier als Option (Standard wie Photoshop: Alt = fein, Shift = grob)
+  - Fein/Grob per Modifier als Option (Standard wie Photoshop: Alt = fein, Shift = grob). Vorrang haben aber echte Modifier-Tasten; Fein/Grob nur als Zusatz, kein „Voodoo"
   - Tastenbelegung **auswählbar statt fix**: sinnvolle Vorgabe (z. B. Export = ⌘D), pro Taste auf Aktion aus Liste oder eigenes Tastenkürzel umstellbar
   - **Modi/Ebenen** wie in der Loupedeck-Software für LrC: `--/Clr` schaltet die fünf Tasten Shift/Rot/1 · Ctrl/Gelb/2 · Cmd/Grün/3 · Alt/Blau/4 · Tab/Violett/5 zwischen Sternen und Farben, Fn + `--/Clr` auf Modifier-Tasten; **Custom Mode** = komplette zweite Belegung aller Tasten
   - Aktuellen Modus anzeigen (Menüleiste, evtl. Ansage/Overlay)
