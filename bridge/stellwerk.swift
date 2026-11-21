@@ -209,7 +209,7 @@ final class TangentHub {
 // MARK: - Tastenkürzel (Ausweg für Funktionen ohne Tangent-ID, z. B. Undo)
 
 let captureOneBundleID = "com.captureone.captureone16"
-struct KeyCombo { let code: CGKeyCode; let flags: CGEventFlags; let text: String }
+struct KeyCombo { let code: CGKeyCode; let flags: CGEventFlags; let text: String; let char: String? }
 
 let namedKeys: [String: CGKeyCode] = ["left": 123, "right": 124, "down": 125, "up": 126, "return": 36,
                                       "tab": 48, "space": 49, "delete": 51, "esc": 53]
@@ -237,27 +237,75 @@ func keyCode(for ch: Character) -> CGKeyCode? {
 func parseKeys(_ s: String) -> KeyCombo? {
     var flags: CGEventFlags = []
     var code: CGKeyCode?
+    var char: String?
     for part in s.lowercased().split(separator: "+").map(String.init) {
         switch part {
         case "cmd": flags.insert(.maskCommand)
         case "shift": flags.insert(.maskShift)
         case "alt", "opt": flags.insert(.maskAlternate)
         case "ctrl": flags.insert(.maskControl)
-        default: code = namedKeys[part] ?? (part.count == 1 ? keyCode(for: part.first!) : nil)
+        default:
+            code = namedKeys[part] ?? (part.count == 1 ? keyCode(for: part.first!) : nil)
+            if part.count == 1 { char = part.uppercased() }
         }
     }
-    return code.map { KeyCombo(code: $0, flags: flags, text: s) }
+    return code.map { KeyCombo(code: $0, flags: flags, text: s, char: char) }
+}
+
+/// Sucht in der Menüleiste der App den Eintrag mit diesem Tastenkürzel und klickt ihn
+/// (Bedienungshilfen-API). Klappt auch im Hintergrund und unabhängig von der Menüsprache.
+func pressMenuItem(pid: pid_t, _ k: KeyCombo) -> Bool {
+    guard let ch = k.char, k.flags.contains(.maskCommand) else { return false }
+    // Modifier-Kodierung der Bedienungshilfen: Shift 1, Option 2, Control 4 (⌘ ist Standard)
+    var mods = 0
+    if k.flags.contains(.maskShift) { mods |= 1 }
+    if k.flags.contains(.maskAlternate) { mods |= 2 }
+    if k.flags.contains(.maskControl) { mods |= 4 }
+
+    func attr(_ el: AXUIElement, _ name: String) -> CFTypeRef? {
+        var v: CFTypeRef?
+        return AXUIElementCopyAttributeValue(el, name as CFString, &v) == .success ? v : nil
+    }
+    func search(_ el: AXUIElement, depth: Int) -> AXUIElement? {
+        if let c = attr(el, kAXMenuItemCmdCharAttribute) as? String, c.uppercased() == ch,
+           (attr(el, kAXMenuItemCmdModifiersAttribute) as? Int ?? 0) == mods { return el }
+        guard depth < 6, let kids = attr(el, kAXChildrenAttribute) as? [AXUIElement] else { return nil }
+        for kid in kids { if let hit = search(kid, depth: depth + 1) { return hit } }
+        return nil
+    }
+    let appEl = AXUIElementCreateApplication(pid)
+    guard let bar = attr(appEl, kAXMenuBarAttribute), CFGetTypeID(bar) == AXUIElementGetTypeID(),
+          let item = search(bar as! AXUIElement, depth: 0) else { return false }
+    let title = attr(item, kAXTitleAttribute) as? String ?? "?"
+    let enabled = attr(item, kAXEnabledAttribute) as? Bool ?? true
+    let err = AXUIElementPerformAction(item, kAXPressAction as CFString)
+    print("   Menü „\(title)\" \(enabled ? "aktiv" : "AUSGEGRAUT"), \(err == .success ? "geklickt" : "nicht klickbar (\(err.rawValue))")")
+    return err == .success
 }
 
 func sendKeys(_ k: KeyCombo) {
-    guard CGPreflightPostEventAccess() else {
+    guard AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary) else {
         print("⚠️  Tastenkürzel brauchen die Freigabe unter Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen (für das Terminal)")
-        CGRequestPostEventAccess()
         return
     }
     guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: captureOneBundleID).first else {
         print("⚠️  Capture One läuft nicht"); return
     }
+    // Undo & Co. wirken aufs aktive Fenster → Capture One muss vorne sein
+    if !app.isActive {
+        print("   Capture One nach vorne holen")
+        app.activate()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { deliverKeys(k, to: app) }
+    } else {
+        deliverKeys(k, to: app)
+    }
+}
+
+func deliverKeys(_ k: KeyCombo, to app: NSRunningApplication) {
+    // 1. Weg: Menüeintrag direkt auslösen (kommt sicher bei Capture One an)
+    if pressMenuItem(pid: app.processIdentifier, k) { return }
+    // 2. Weg (Notlösung): Tastendruck an Capture One schicken
+    print("   kein Menüeintrag für \(k.text) gefunden → Tastendruck")
     for down in [true, false] {
         let e = CGEvent(keyboardEventSource: nil, virtualKey: k.code, keyDown: down)
         e?.flags = k.flags
