@@ -223,9 +223,12 @@ final class Engine {
             if let a = m.bwAction { hub.action(a) }
             return
         }
+        if held.contains(m.fnKey), let b = m.fnButtons[name] {   // Fn + Taste
+            run(b, name: "Fn+\(name)")
+            return
+        }
         switch m.buttons[name] {
-        case .action(let a)?: trigger(a)
-        case .keys(let k)?: log("\(name): \(k.text)"); keys.send(k, toBundleID: Self.captureOneBundleID)
+        case let b?: run(b, name: name)
         case nil:
             if let p = dialBinding(name)?.param { hub.reset(p); log("\(catalog.name(p)) zurückgesetzt") }
             else { log("\(name): nicht belegt") }
@@ -235,6 +238,13 @@ final class Engine {
     func release(_ name: String) {
         held.remove(name)
         if keys.realDown.contains(name) { keys.postReal(name, down: false) }
+    }
+
+    private func run(_ b: ButtonBinding, name: String) {
+        switch b {
+        case .action(let a): trigger(a)
+        case .keys(let k): log("\(name): \(prettyKeys(k.text))"); keys.send(k, toBundleID: Self.captureOneBundleID)
+        }
     }
 
     private func announce(_ text: String, symbol: String) {

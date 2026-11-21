@@ -153,6 +153,9 @@ private struct ButtonSettingsView: View {
             } else {
                 Text(engine.describe(engine.mapping.buttons[name]))
                     .foregroundStyle(engine.mapping.buttons[name] == nil ? .secondary : .primary)
+                if let fn = engine.mapping.fnButtons[name] {
+                    Text("Fn: \(engine.describe(fn))").font(.caption).foregroundStyle(.secondary)
+                }
                 if changed {
                     Text("geändert")
                         .font(.caption2.weight(.semibold))

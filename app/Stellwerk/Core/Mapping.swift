@@ -182,6 +182,7 @@ struct Mapping {
     var app = "Capture One"
     var dials: [String: DialBinding] = [:]
     var buttons: [String: ButtonBinding] = [:]
+    var fnButtons: [String: ButtonBinding] = [:]   // Fn halten + Taste
     var accel = Accel()
     var speed = 1.0
 
@@ -227,13 +228,19 @@ struct Mapping {
                           mediumMs: a["mediumMs"] ?? 45, mediumFactor: a["mediumFactor"] ?? 2)
         }
         dials = dialsFrom(json["dials"] as? [String: [String: Any]] ?? [:])
-        for (name, v) in json["buttons"] as? [String: [String: Any]] ?? [:] {
-            if let a = (v["action"] as? String).flatMap(hexID) {
-                buttons[name] = .action(a)
-            } else if let k = v["keys"] as? String {
-                if let combo = Keys.parse(k) { buttons[name] = .keys(combo) } else { warnings.append("\(name): Tastenkürzel \(k) nicht lesbar") }
+        func buttonsFrom(_ raw: [String: [String: Any]]) -> [String: ButtonBinding] {
+            var out: [String: ButtonBinding] = [:]
+            for (name, v) in raw {
+                if let a = (v["action"] as? String).flatMap(hexID) {
+                    out[name] = .action(a)
+                } else if let k = v["keys"] as? String {
+                    if let combo = Keys.parse(k) { out[name] = .keys(combo) } else { warnings.append("\(name): Tastenkürzel \(k) nicht lesbar") }
+                }
             }
+            return out
         }
+        buttons = buttonsFrom(json["buttons"] as? [String: [String: Any]] ?? [:])
+        fnButtons = buttonsFrom(json["fnButtons"] as? [String: [String: Any]] ?? [:])
 
         let mod = json["modifiers"] as? [String: Any] ?? [:]
         fineFactor = mod["fine"] as? Double ?? fineFactor
@@ -256,7 +263,7 @@ struct Mapping {
 
         // IDs gegen controls.xml prüfen
         guard !catalog.items.isEmpty else { return }
-        let buttonIDs = buttons.values.compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
+        let buttonIDs = (Array(buttons.values) + Array(fnButtons.values)).compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
         let dialIDs = (Array(dials.values) + Array(bwDials.values)).flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
         let all = Set(dialIDs + buttonIDs + starIDs + colorIDs + [starsClear, colorsClear, bwAction].compactMap { $0 })
         for id in all where catalog.items[id] == nil { warnings.append("\(hexStr(id)) steht nicht in controls.xml") }

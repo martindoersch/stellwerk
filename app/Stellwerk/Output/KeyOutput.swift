@@ -47,11 +47,15 @@ final class KeyOutput {
             onLog?("Menü „\(title)\"")
             return
         }
-        onLog?("kein Menüeintrag für \(k.text) → Tastendruck")
+        // Kein Menüeintrag (z. B. Enter, Esc): als echter Tastendruck an die vorderste App,
+        // die wir gerade nach vorne geholt haben. postToPid landete teils im Terminal.
+        if !k.flags.contains(.maskCommand) { onLog?("Taste \(prettyKeys(k.text))") }
+        else { onLog?("kein Menüeintrag für \(prettyKeys(k.text)) → Tastendruck") }
+        let src = CGEventSource(stateID: .hidSystemState)
         for down in [true, false] {
-            let e = CGEvent(keyboardEventSource: nil, virtualKey: k.code, keyDown: down)
+            let e = CGEvent(keyboardEventSource: src, virtualKey: k.code, keyDown: down)
             e?.flags = k.flags
-            e?.postToPid(app.processIdentifier)
+            e?.post(tap: .cghidEventTap)
         }
     }
 

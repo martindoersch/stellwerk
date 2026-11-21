@@ -50,6 +50,10 @@
       "Farbregler 8 (Magenta)": { "param": "0x1C", "perTick": 1 }
     }
   },
+  "fnButtons": {
+    "_hinweis": "Fn gedrückt halten + Taste",
+    "Undo":         { "action": "0x112", "_hinweis": "Anpassungen zurücksetzen (Martin)" }
+  },
   "buttons": {
     "Undo":         { "keys": "cmd+z", "_hinweis": "Tangent hat kein Undo (0x77 getestet: wirkungslos) → Tastenkürzel" },
     "Redo":         { "keys": "cmd+shift+z", "_hinweis": "Tangent-Redo 0x78 getestet: wirkungslos → Menü/Tastenkürzel" },
@@ -70,8 +74,8 @@
     "P6":           { "action": "0xCD",  "_hinweis": "Fokusmaske ein/aus" },
     "P7":           { "action": "0x114", "_hinweis": "neue Variante" },
     "P8":           { "action": "0x115", "_hinweis": "Variante klonen" },
-    "C1":           { "action": "0x155", "_hinweis": "Werkzeug Zuschneiden" },
-    "C2":           { "action": "0x156", "_hinweis": "Werkzeug Ausrichten" },
+    "C1":           { "keys": "return", "_hinweis": "Enter (Martin), z. B. Zuschneiden bestätigen, Dialoge" },
+    "C2":           { "keys": "esc", "_hinweis": "Esc (Martin), abbrechen" },
     "C3":           { "action": "0x15B", "_hinweis": "Weißabgleich-Pipette" },
     "C4":           { "action": "0x176", "_hinweis": "Maske malen" },
     "C5":           { "action": "0x253", "_hinweis": "Reparieren (Heal)" },
