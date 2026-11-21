@@ -122,7 +122,9 @@ private struct SliderRow: View {
 
 private struct ButtonSettingsView: View {
     @Bindable var engine: Engine
-    @State private var editing: String?
+    @State private var editing: EditTarget?
+
+    struct EditTarget: Identifiable { let name: String; let fn: Bool; var id: String { (fn ? "fn:" : "") + name } }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -141,6 +143,16 @@ private struct ButtonSettingsView: View {
                 .disabled(engine.settings.buttons.isEmpty && engine.settings.fnButtons.isEmpty)
             }
             .padding(10)
+        }
+        .sheet(item: $editing) { t in
+            VStack(spacing: 0) {
+                ButtonEditor(engine: engine, name: t.name, fn: t.fn)
+                HStack {
+                    Spacer()
+                    Button("Fertig") { editing = nil }.keyboardShortcut(.defaultAction)
+                }
+                .padding([.horizontal, .bottom], 14)
+            }
         }
     }
 
@@ -175,13 +187,8 @@ private struct ButtonSettingsView: View {
 
 extension ButtonSettingsView {
     private func editButton(_ title: String, name: String, fn: Bool) -> some View {
-        let key = (fn ? "fn:" : "") + name
-        return Button(title) { editing = key }
+        Button(title) { editing = EditTarget(name: name, fn: fn) }
             .controlSize(.small)
-            .popover(isPresented: Binding(get: { editing == key }, set: { if !$0 { editing = nil } }),
-                     arrowEdge: .trailing) {
-                ButtonEditor(engine: engine, name: name, fn: fn)
-            }
     }
 }
 
@@ -239,7 +246,7 @@ private struct ButtonEditor: View {
             }
         }
         .padding(14)
-        .frame(width: 380)
+        .frame(width: 440)
         .onAppear {
             switch engine.choice(name, fn: fn) {
             case nil: kind = .standard

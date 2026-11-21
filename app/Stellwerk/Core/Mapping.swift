@@ -72,7 +72,9 @@ struct Catalog {
         for g in groups {
             for i in g["items"] as? [[String: Any]] ?? [] {
                 guard let idStr = i["id"] as? String, let id = hexID(idStr), let name = i["name"] as? String else { continue }
-                let display = (counts[name] ?? 0) > 1 ? "\(g["name"] as? String ?? "") \(name)" : name
+                // Doppelte Namen (z. B. Copy Adjustments) mit Gruppe unterscheiden: "Copy Adjustments (Cursor Tools)"
+                let group = (g["name"] as? String ?? "").replacingOccurrences(of: " Shortcuts", with: "")
+                let display = (counts[name] ?? 0) > 1 ? "\(name) (\(group))" : name
                 items[id] = C1Control(name: display, isParam: i["kind"] as? String == "parameter",
                                       step: i["step"] as? Double ?? 0.1, group: g["name"] as? String ?? "")
             }
