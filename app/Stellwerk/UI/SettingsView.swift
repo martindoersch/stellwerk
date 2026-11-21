@@ -132,11 +132,13 @@ private struct ButtonSettingsView: View {
                 }
             }
             HStack {
-                Text("Geänderte Tasten sind markiert. Drehregler-Drücken setzt immer den Regler zurück.")
+                Text("Fn … = Belegung bei gehaltener Fn-Taste. Drehregler-Drücken setzt immer den Regler zurück.")
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Button("Alle zurücksetzen") { engine.updateSettings { $0.buttons.removeAll() } }
-                    .disabled(engine.settings.buttons.isEmpty)
+                Button("Alle zurücksetzen") {
+                    engine.updateSettings { $0.buttons.removeAll(); $0.fnButtons.removeAll() }
+                }
+                .disabled(engine.settings.buttons.isEmpty && engine.settings.fnButtons.isEmpty)
             }
             .padding(10)
         }
@@ -144,7 +146,7 @@ private struct ButtonSettingsView: View {
 
     @ViewBuilder
     private func row(_ name: String) -> some View {
-        let changed = engine.settings.buttons[name] != nil
+        let changed = engine.settings.buttons[name] != nil || engine.settings.fnButtons[name] != nil
         HStack {
             Text(name).frame(width: 110, alignment: .leading)
             if let role = engine.specialRole(name) {
@@ -164,14 +166,22 @@ private struct ButtonSettingsView: View {
                         .foregroundStyle(.black)
                 }
                 Spacer()
-                Button("Ändern …") { editing = name }
-                    .controlSize(.small)
-                    .popover(isPresented: Binding(get: { editing == name }, set: { if !$0 { editing = nil } }),
-                             arrowEdge: .trailing) {
-                        ButtonEditor(engine: engine, name: name)
-                    }
+                editButton("Ändern …", name: name, fn: false)
+                editButton("Fn …", name: name, fn: true)
             }
         }
+    }
+}
+
+extension ButtonSettingsView {
+    private func editButton(_ title: String, name: String, fn: Bool) -> some View {
+        let key = (fn ? "fn:" : "") + name
+        return Button(title) { editing = key }
+            .controlSize(.small)
+            .popover(isPresented: Binding(get: { editing == key }, set: { if !$0 { editing = nil } }),
+                     arrowEdge: .trailing) {
+                ButtonEditor(engine: engine, name: name, fn: fn)
+            }
     }
 }
 
@@ -180,12 +190,13 @@ private struct ButtonEditor: View {
 
     @Bindable var engine: Engine
     let name: String
+    let fn: Bool
     @State private var kind = Kind.standard
     @State private var search = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(name).font(.headline)
+            Text(fn ? "Fn + \(name)" : name).font(.headline)
             Picker("", selection: $kind) {
                 ForEach(Kind.allCases, id: \.self) { Text($0.rawValue) }
             }
@@ -200,7 +211,7 @@ private struct ButtonEditor: View {
 
             switch kind {
             case .standard:
-                Text("Vorgabe: \(engine.describe(engine.defaultMapping.buttons[name]))").foregroundStyle(.secondary)
+                Text("Vorgabe: \(engine.describe(engine.defaultBinding(name, fn: fn)))").foregroundStyle(.secondary)
             case .off:
                 Text("Die Taste macht nichts.").foregroundStyle(.secondary)
             case .keys:
@@ -230,7 +241,7 @@ private struct ButtonEditor: View {
         .padding(14)
         .frame(width: 380)
         .onAppear {
-            switch engine.settings.buttons[name] {
+            switch engine.choice(name, fn: fn) {
             case nil: kind = .standard
             case .action?: kind = .action
             case .keys?: kind = .keys
@@ -240,11 +251,11 @@ private struct ButtonEditor: View {
     }
 
     private var currentAction: UInt32? {
-        if case .action(let a)? = engine.mapping.buttons[name] { return a } else { return nil }
+        if case .action(let a)? = engine.binding(name, fn: fn) { return a } else { return nil }
     }
 
     private var currentKeys: String? {
-        if case .keys(let k)? = engine.mapping.buttons[name] { return k.text } else { return nil }
+        if case .keys(let k)? = engine.binding(name, fn: fn) { return k.text } else { return nil }
     }
 
     private var filteredActions: [(id: UInt32, control: C1Control)] {
@@ -255,7 +266,7 @@ private struct ButtonEditor: View {
     }
 
     private func set(_ choice: ButtonChoice?) {
-        engine.updateSettings { $0.buttons[name] = choice }
+        engine.setChoice(choice, for: name, fn: fn)
     }
 }
 

@@ -22,6 +22,8 @@ final class Engine {
     var values: [UInt32: Float] = [:]
     var launchAtLogin = SMAppService.mainApp.status == .enabled
     private(set) var settings = UserSettings.load()
+    var captureOneRunning = false
+    var restartingCaptureOne = false
 
     // MARK: Bausteine
     private(set) var catalog = Catalog()
@@ -56,6 +58,14 @@ final class Engine {
         midi.start()
         Accessibility.request()
         startTapWhenTrusted()
+        // Läuft Capture One? (für den Knopf „Capture One neu starten")
+        updateCaptureOneRunning()
+        let ws = NSWorkspace.shared.notificationCenter
+        for n in [NSWorkspace.didLaunchApplicationNotification, NSWorkspace.didTerminateApplicationNotification] {
+            ws.addObserver(forName: n, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.updateCaptureOneRunning() }
+            }
+        }
         NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil,
                                                queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.keys.releaseAll(); self?.hub.stop() }
@@ -106,6 +116,46 @@ final class Engine {
 
     func refreshAccessibility() { accessibilityOK = Accessibility.isTrusted }
 
+    // MARK: Capture One neu starten
+    // Capture One sucht den Tangent Hub nur beim eigenen Start (getestet, kein Wiederverbinden).
+
+    private func updateCaptureOneRunning() {
+        captureOneRunning = !NSRunningApplication.runningApplications(withBundleIdentifier: Self.captureOneBundleID).isEmpty
+    }
+
+    /// Beendet Capture One ordentlich (wie ⌘Q) und startet es neu, damit es sich mit Stellwerk verbindet.
+    func restartCaptureOne() {
+        guard !restartingCaptureOne,
+              let app = NSRunningApplication.runningApplications(withBundleIdentifier: Self.captureOneBundleID).first,
+              let url = app.bundleURL else { return }
+        restartingCaptureOne = true
+        log("Capture One wird neu gestartet …")
+        app.terminate()
+        waitForQuit(app, url: url, tries: 0)
+    }
+
+    private func waitForQuit(_ app: NSRunningApplication, url: URL, tries: Int) {
+        if app.isTerminated {
+            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration()) { [weak self] _, err in
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated {
+                        self?.restartingCaptureOne = false
+                        if let err { self?.log("Start fehlgeschlagen: \(err.localizedDescription)") }
+                    }
+                }
+            }
+            return
+        }
+        guard tries < 60 else {   // 30 s: vermutlich wartet ein Dialog in Capture One
+            restartingCaptureOne = false
+            log("Capture One beendet sich nicht – Dialog offen?")
+            return
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            MainActor.assumeIsolated { self?.waitForQuit(app, url: url, tries: tries + 1) }
+        }
+    }
+
     // MARK: Einstellungen
 
     /// Ändert die Einstellungen, speichert sie und macht sie sofort wirksam
@@ -116,6 +166,16 @@ final class Engine {
         settings = s
         s.save()
         mapping = defaultMapping.applying(s)
+    }
+
+    // Tastenbelegung je Ebene (normal oder Fn) für das Einstellungsfenster
+    func binding(_ name: String, fn: Bool) -> ButtonBinding? { fn ? mapping.fnButtons[name] : mapping.buttons[name] }
+    func defaultBinding(_ name: String, fn: Bool) -> ButtonBinding? {
+        fn ? defaultMapping.fnButtons[name] : defaultMapping.buttons[name]
+    }
+    func choice(_ name: String, fn: Bool) -> ButtonChoice? { fn ? settings.fnButtons[name] : settings.buttons[name] }
+    func setChoice(_ c: ButtonChoice?, for name: String, fn: Bool) {
+        updateSettings { if fn { $0.fnButtons[name] = c } else { $0.buttons[name] = c } }
     }
 
     func describe(_ b: ButtonBinding?) -> String {

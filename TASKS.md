@@ -65,9 +65,9 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Sicherheit: Hub lauschte auf allen Schnittstellen (`*:64246`, also im WLAN erreichbar), obwohl `requiredInterfaceType = .loopback` gesetzt war → jetzt fest an `127.0.0.1` gebunden (App und Prototyp)
 - [x] Martins Wünsche (2026-11-21): **Fn + Undo = Zurücksetzen** (neuer Abschnitt `fnButtons` in der Belegung, in den Einstellungen angezeigt), **C1 = Enter, C2 = Esc**. Tasten ohne Menüeintrag gehen jetzt als echter Tastendruck an die vorderste App (Capture One wird vorher nach vorne geholt). Zuschneiden/Ausrichten sind damit von C1/C2 weg
 - [x] Bug (behoben, von Martin bestätigt ✅): Fn + Undo kam als Undo an. Mitschnitt zeigte korrektes MIDI; Ursache: `"_hinweis"`-Text im Abschnitt `fnButtons` ließ den strengen JSON-Cast scheitern → ganzer Abschnitt verworfen. Jetzt werden Hinweistexte in allen Abschnitten übersprungen (`entries()`)
-- [ ] Fn-Ebene in den Einstellungen belegbar machen
-- [ ] Knopf „Capture One neu starten" im Menü, wenn Capture One läuft, aber nicht verbunden ist
-- [ ] **Martin:** v0.3 testen
+- [x] Fn-Ebene in den Einstellungen belegbar (Knopf „Fn …" pro Taste, gespeichert als `fnButtons` in settings.json)
+- [x] Knopf „Capture One neu starten" im Menü (nur sichtbar, wenn Capture One läuft, aber nicht verbunden ist): beendet wie ⌘Q, wartet bis zu 30 s, startet neu
+- [ ] **Martin:** v0.3 testen, dazu Fn-Ebene in den Einstellungen und Neustart-Knopf
 - [ ] Ganz zum Schluss: Custom Mode (zweite Belegung aller Tasten)
 - [ ] Belegungsdateien: `app/Stellwerk/Mappings/` ist jetzt die Hauptquelle; `bridge/mappings/` nur noch für den Prototyp
 

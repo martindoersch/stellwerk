@@ -22,6 +22,15 @@ struct StatusView: View {
                           detail: engine.deviceName != nil ? "verbunden" : "nicht gefunden")
                 StatusRow(ok: engine.hubState.isConnected, warn: !engine.hubState.isFailed,
                           title: "Capture One", detail: hubText)
+                if engine.captureOneRunning && engine.hubState == .listening {
+                    Button(engine.restartingCaptureOne ? "Capture One startet neu …" : "Capture One neu starten") {
+                        engine.restartCaptureOne()
+                    }
+                    .disabled(engine.restartingCaptureOne)
+                    .controlSize(.small)
+                    .padding(.leading, 18)
+                    .help("Capture One verbindet sich nur beim Start. Wird ordentlich beendet (wie ⌘Q) und neu gestartet.")
+                }
                 StatusRow(ok: engine.accessibilityOK, title: "Bedienungshilfen",
                           detail: engine.accessibilityOK ? "freigegeben" : "Freigabe fehlt")
                 if !engine.accessibilityOK {

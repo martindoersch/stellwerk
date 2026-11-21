@@ -15,6 +15,7 @@ struct UserSettings: Codable, Equatable {
     var fine = 0.2           // Alt/⌥ halten
     var coarse = 4.0         // Shift/⇧ halten
     var buttons: [String: ButtonChoice] = [:]
+    var fnButtons: [String: ButtonChoice] = [:]   // Fn halten + Taste
     var showHUD = true       // Einblendung beim Moduswechsel
 
     init() {}
@@ -28,6 +29,7 @@ struct UserSettings: Codable, Equatable {
         fine = try c.decodeIfPresent(Double.self, forKey: .fine) ?? d.fine
         coarse = try c.decodeIfPresent(Double.self, forKey: .coarse) ?? d.coarse
         buttons = try c.decodeIfPresent([String: ButtonChoice].self, forKey: .buttons) ?? d.buttons
+        fnButtons = try c.decodeIfPresent([String: ButtonChoice].self, forKey: .fnButtons) ?? d.fnButtons
         showHUD = try c.decodeIfPresent(Bool.self, forKey: .showHUD) ?? d.showHUD
     }
 
@@ -58,13 +60,17 @@ extension Mapping {
         m.accel.fastFactor = 1 + 3 * s.acceleration
         m.fineFactor = s.fine
         m.coarseFactor = s.coarse
-        for (name, choice) in s.buttons {
-            switch choice {
-            case .action(let h): if let id = hexID(h) { m.buttons[name] = .action(id) }
-            case .keys(let k): if let kc = Keys.parse(k) { m.buttons[name] = .keys(kc) }
-            case .off: m.buttons[name] = nil
+        func apply(_ choices: [String: ButtonChoice], to target: inout [String: ButtonBinding]) {
+            for (name, choice) in choices {
+                switch choice {
+                case .action(let h): if let id = hexID(h) { target[name] = .action(id) }
+                case .keys(let k): if let kc = Keys.parse(k) { target[name] = .keys(kc) }
+                case .off: target[name] = nil
+                }
             }
         }
+        apply(s.buttons, to: &m.buttons)
+        apply(s.fnButtons, to: &m.fnButtons)
         return m
     }
 }
