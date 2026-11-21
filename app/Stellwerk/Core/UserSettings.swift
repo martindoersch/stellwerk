@@ -15,6 +15,21 @@ struct UserSettings: Codable, Equatable {
     var fine = 0.2           // Alt/⌥ halten
     var coarse = 4.0         // Shift/⇧ halten
     var buttons: [String: ButtonChoice] = [:]
+    var showHUD = true       // Einblendung beim Moduswechsel
+
+    init() {}
+
+    // Fehlende Felder (ältere settings.json) → Vorgabe statt Fehler
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = UserSettings()
+        speed = try c.decodeIfPresent(Double.self, forKey: .speed) ?? d.speed
+        acceleration = try c.decodeIfPresent(Double.self, forKey: .acceleration) ?? d.acceleration
+        fine = try c.decodeIfPresent(Double.self, forKey: .fine) ?? d.fine
+        coarse = try c.decodeIfPresent(Double.self, forKey: .coarse) ?? d.coarse
+        buttons = try c.decodeIfPresent([String: ButtonChoice].self, forKey: .buttons) ?? d.buttons
+        showHUD = try c.decodeIfPresent(Bool.self, forKey: .showHUD) ?? d.showHUD
+    }
 
     static var url: URL {
         MappingStore.userDir.deletingLastPathComponent().appendingPathComponent("settings.json")

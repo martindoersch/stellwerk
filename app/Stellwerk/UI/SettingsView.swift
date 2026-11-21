@@ -10,9 +10,41 @@ struct SettingsView: View {
                 .tabItem { Label("Drehregler", systemImage: "dial.medium") }
             ButtonSettingsView(engine: engine)
                 .tabItem { Label("Tasten", systemImage: "square.grid.3x3") }
+            GeneralSettingsView(engine: engine)
+                .tabItem { Label("Allgemein", systemImage: "gearshape") }
         }
         .frame(width: 560, height: 520)
         .tint(.lime)
+    }
+}
+
+// MARK: - Allgemein
+
+private struct GeneralSettingsView: View {
+    @Bindable var engine: Engine
+
+    var body: some View {
+        Form {
+            Section("Anzeige") {
+                Toggle("Moduswechsel einblenden", isOn: Binding(
+                    get: { engine.settings.showHUD }, set: { v in engine.updateSettings { $0.showHUD = v } }))
+                Text("Kurzes Schild unten in der Bildschirmmitte, z. B. „Farben\" oder „Schwarzweiß\".")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Start") {
+                Toggle("Beim Anmelden starten", isOn: Binding(
+                    get: { engine.launchAtLogin }, set: { engine.setLaunchAtLogin($0) }))
+                Text("Stellwerk muss vor Capture One laufen – sonst Capture One neu starten.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Belegungsdateien") {
+                HStack {
+                    Button("Ordner öffnen") { engine.openMappingFolder() }
+                    Button("Neu laden") { engine.reloadMappings() }
+                }
+            }
+        }
+        .formStyle(.grouped)
     }
 }
 

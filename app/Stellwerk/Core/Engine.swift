@@ -31,6 +31,7 @@ final class Engine {
     private let midi = MIDIInput(match: "Loupedeck")
     private let hub = TangentHub()
     private let keys = KeyOutput()
+    private let hud = HUD()
 
     private var held = Set<String>()                 // gerade gedrückte Tasten am Gerät
     private var lastTick: [String: TimeInterval] = [:]
@@ -197,6 +198,11 @@ final class Engine {
         if name == m.modeToggle {
             keyMode = held.contains(m.fnKey) ? .modifiers : (keyMode == .stars ? .colors : .stars)
             log("Modus: \(keyMode.rawValue)")
+            switch keyMode {
+            case .stars: announce("Sterne", symbol: "star.fill")
+            case .colors: announce("Farben", symbol: "paintpalette.fill")
+            case .modifiers: announce("Tasten", symbol: "keyboard")
+            }
             return
         }
         if let i = m.modeKeys.firstIndex(of: name) {
@@ -212,6 +218,8 @@ final class Engine {
         if name == m.bwToggle {
             bwActive.toggle()
             log("Farbregler: \(bwActive ? "Schwarzweiß" : "Farbbalance")")
+            announce(bwActive ? "Schwarzweiß" : "Farbbalance",
+                     symbol: bwActive ? "circle.lefthalf.filled" : "circle.hexagongrid.fill")
             if let a = m.bwAction { hub.action(a) }
             return
         }
@@ -227,6 +235,10 @@ final class Engine {
     func release(_ name: String) {
         held.remove(name)
         if keys.realDown.contains(name) { keys.postReal(name, down: false) }
+    }
+
+    private func announce(_ text: String, symbol: String) {
+        if settings.showHUD { hud.show(text, symbol: symbol) }
     }
 
     private func trigger(_ a: UInt32) {

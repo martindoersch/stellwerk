@@ -6,7 +6,36 @@
     ]
   },
   "groups" : [
-
+    {
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "display-p3:0.82439,0.84610,0.26853,0.60836"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "dial.svg",
+          "name" : "dial"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
   ],
   "supported-platforms" : {
     "circles" : [
