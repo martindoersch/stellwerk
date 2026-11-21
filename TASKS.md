@@ -38,7 +38,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Echte Regler getestet (2026-11-21): **Empfindlichkeit perfekt**, mehrere Regler gleichzeitig drehen funktioniert („WOW") ✅. Copy `0xFC` ✅. Paste `0xFD` öffnete Dialog „Anpassungen einfügen" und hing → jetzt Menü ⇧⌘V (testen; Alternative `0x16D`)
 - [x] Getestet ✅: Alt/⌥ = fein, Shift/⇧ = grob; `--/Clr` = Sterne ↔ Farben, Fn + `--/Clr` = Modifier-Modus, Fn + Taste = löschen; Paste über Menü ⇧⌘V
 - [x] Modifier-Modus: Loupedeck-Tasten Shift/Ctrl/Cmd/Alt/Tab wirken als **echte Tasten**, auch mit Maus-Klicks ✅ (Martin: Standard-Tasten wichtiger als Fein/Grob, beides zusammen ok). Gemeldete Modifier allein reichen nicht – echte Mausklicks tragen nur den Zustand der echten Tastatur → **Event-Tap** setzt die gehaltenen Loupedeck-Modifier bei Maus-/Tastatur-Ereignissen dazu
-- [ ] Belegung für die 8 Farbregler und P1–P8/C1–C6 überlegen (Capture One hat über Tangent kein HSL pro Farbe → Color Balance? Ebenen?)
+- [ ] Testbelegung aller Tasten ausprobieren (2026-11-21): Farbregler = Farbbalance (Gesamt/Schatten/Mitteltöne/Lichter X/Y), **Clr/BW** = SW ein/aus + Farbregler auf SW-Regler; P1–P8 Auto/Reset/Drehen/Warnungen/Varianten, C1–C6 Werkzeuge, L1–L3 Ebenen, Export ⌘D. Frei: Hue/Sat/Lum (kein HSL über Tangent), Custom Mode (reserviert für zweite Belegung)
 
 ## Phase 2b — Software-Surface (früh, als Testwerkzeug)
 

@@ -330,13 +330,28 @@ if let a = binding["acceleration"] as? [String: Double] {
     accel = Accel(fastMs: a["fastMs"] ?? 20, fastFactor: a["fastFactor"] ?? 4,
                   mediumMs: a["mediumMs"] ?? 45, mediumFactor: a["mediumFactor"] ?? 2)
 }
-for (name, v) in binding["dials"] as? [String: [String: Any]] ?? [:] {
-    let p = (v["param"] as? String).flatMap(hexID)
-    dials[name] = DialBinding(param: p,
-                              perTick: v["perTick"] as? Double ?? p.flatMap { catalog[$0]?.step } ?? 0.1,
-                              plus: (v["plus"] as? String).flatMap(hexID),
-                              minus: (v["minus"] as? String).flatMap(hexID))
+func parseDials(_ raw: [String: [String: Any]]) -> [String: DialBinding] {
+    var out: [String: DialBinding] = [:]
+    for (name, v) in raw {
+        let p = (v["param"] as? String).flatMap(hexID)
+        out[name] = DialBinding(param: p,
+                                perTick: v["perTick"] as? Double ?? p.flatMap { catalog[$0]?.step } ?? 0.1,
+                                plus: (v["plus"] as? String).flatMap(hexID),
+                                minus: (v["minus"] as? String).flatMap(hexID))
+    }
+    return out
 }
+dials = parseDials(binding["dials"] as? [String: [String: Any]] ?? [:])
+
+// Schwarzweiß-Ebene: Clr/BW schaltet SW ein/aus und belegt die Farbregler um
+let bwCfg = binding["bwLayer"] as? [String: Any] ?? [:]
+let bwToggle = bwCfg["toggle"] as? String
+let bwAction = (bwCfg["action"] as? String).flatMap(hexID)
+let bwDials = parseDials(bwCfg["dials"] as? [String: [String: Any]] ?? [:])
+var bwActive = false
+
+/// Belegung eines Drehreglers in der gerade aktiven Ebene
+func dialBinding(_ name: String) -> DialBinding? { (bwActive ? bwDials[name] : nil) ?? dials[name] }
 for (name, v) in binding["buttons"] as? [String: [String: Any]] ?? [:] {
     if let a = (v["action"] as? String).flatMap(hexID) {
         buttons[name] = .action(a)
@@ -367,7 +382,7 @@ var held = Set<String>()   // gerade gedrückte Loupedeck-Tasten
 // IDs gegen controls.xml prüfen
 let buttonIDs = buttons.values.compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
     + starIDs + colorIDs + [starsClear, colorsClear].compactMap { $0 }
-for id in Set(dials.values.flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } } + buttonIDs)
+for id in Set((Array(dials.values) + Array(bwDials.values)).flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } } + buttonIDs)
 where !catalog.isEmpty && catalog[id] == nil {
     print("⚠️  \(hexStr(id)) steht nicht in controls.xml (Test, ob Capture One es trotzdem kennt)")
 }
@@ -397,7 +412,7 @@ func findName(_ query: String, in names: [String]) -> String? {
 }
 
 func turn(_ name: String, ticks: Int) {
-    guard let b = dials[name] else { print("   \(name): nicht belegt"); return }
+    guard let b = dialBinding(name) else { print("   \(name): nicht belegt"); return }
     if let plus = b.plus, let minus = b.minus {   // Drehregler löst Aktionen aus
         for _ in 0 ..< abs(ticks) { hub.action(ticks > 0 ? plus : minus) }
         print("→ \(name): \(c1Name(ticks > 0 ? plus : minus)) ×\(abs(ticks))")
@@ -498,11 +513,17 @@ func press(_ name: String) {
         return
     }
     if name == fnKey { return }   // Fn wirkt nur in Kombination
+    if name == bwToggle {
+        bwActive.toggle()
+        print("🔀 Farbregler: \(bwActive ? "Schwarzweiß" : "Farbbalance")")
+        if let a = bwAction { hub.action(a) }
+        return
+    }
     if case .action(let a)? = buttons[name] {
         print("→ \(name): \(c1Name(a))"); hub.action(a)
     } else if case .keys(let k)? = buttons[name] {
         print("→ \(name): Tastenkürzel \(k.text)"); DispatchQueue.main.async { sendKeys(k) }
-    } else if let p = dials[name]?.param {
+    } else if let p = dialBinding(name)?.param {
         print("→ \(name) gedrückt: \(c1Name(p)) zurücksetzen"); hub.reset(p)
     } else {
         print("   \(name): nicht belegt")
@@ -510,7 +531,7 @@ func press(_ name: String) {
 }
 
 hub.onConnected = {
-    for p in Set(dials.values.compactMap(\.param)) { hub.request(p) }   // Startwerte holen
+    for p in Set((Array(dials.values) + Array(bwDials.values)).compactMap(\.param)) { hub.request(p) }   // Startwerte holen
 }
 
 // MARK: - MIDI
@@ -578,7 +599,7 @@ Thread {
                 turn(name, ticks: ticks)
             case "b" where parts.count >= 2:
                 let q = parts.dropFirst().joined(separator: " ")
-                let all = Array(buttons.keys) + Array(dials.keys) + modeKeys + [modeToggle, fnKey].compactMap { $0 }
+                let all = Array(buttons.keys) + Array(dials.keys) + modeKeys + [modeToggle, fnKey, bwToggle].compactMap { $0 }
                 guard let name = findName(q, in: all) else { print("? Taste \(q) unbekannt/mehrdeutig"); return }
                 press(name); release(name)
             case "p" where parts.count == 3:
