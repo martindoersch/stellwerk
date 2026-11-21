@@ -8,19 +8,23 @@ final class HUD {
     private var hideWork: DispatchWorkItem?
 
     func show(_ text: String, symbol: String) {
+        // Größe einmal messen und fest setzen. Die Ansicht darf die Fenstergröße nicht selbst steuern,
+        // sonst schaukeln sich Fenster und SwiftUI-Layout auf (Absturz „Update Constraints in Window").
         let host = NSHostingView(rootView: HUDView(text: text, symbol: symbol))
+        host.sizingOptions = []
         let size = host.fittingSize
+        host.frame = NSRect(origin: .zero, size: size)
+        host.autoresizingMask = [.width, .height]
         let p = panel ?? makePanel()
         panel = p
-        p.contentView = host
 
         // Bildschirm, auf dem der Mauszeiger ist; unteres Drittel, mittig
         let mouse = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
-        if let vf = screen?.visibleFrame {
-            p.setFrame(NSRect(x: vf.midX - size.width / 2, y: vf.minY + vf.height * 0.18,
-                              width: size.width, height: size.height), display: true)
-        }
+        let vf = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        p.setFrame(NSRect(x: vf.midX - size.width / 2, y: vf.minY + vf.height * 0.18,
+                          width: size.width, height: size.height), display: false)
+        p.contentView = host
         p.alphaValue = 1
         p.orderFrontRegardless()
 
