@@ -30,7 +30,8 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 - [x] Loupedeck+ angesteckt: meldet sich als **MIDI-Gerät** „Loupedeck+" (Ein- und Ausgang), kein Treiber nötig, Loupedeck-Software muss nicht laufen
 - [x] Runde 1: 22 Drehregler mitgeschnitten (`bridge/mitschnitt-runde1-regler.log`): Kanal 1, Drehen = CC relativ (`01` = +1, `7F` = −1), Drücken = Note mit gleicher Nummer. CCs 33–48 (14 Regler) + 1–8 (Farbregler). Obere Regler senden ca. 3× so viele Schritte wie die Farbregler → Schrittweite pro Regler
-- [ ] **Martin:** `cd bridge && swift learn_loupedeck.swift` – geführtes Anlernen aller Regler und Tasten mit Sprachansage → `bridge/mappings/loupedeck-plus.json`
+- [x] Loupedeck+ angelernt (2026-11-21) → `bridge/mappings/loupedeck-plus.json`. Keine Bewertungstasten: die Tasten neben „--/Clr" sind **Shift, Ctrl, Cmd, Alt, Tab**. Drehregler-Drücken muss nicht angelernt werden (Note = CC-Nummer)
+- [ ] Sterne 0–5 und Farbmarkierungen neu verorten (P-Tasten? Shift als Ebene?)
 - [ ] Loupedeck-Software beenden oder Gerät freigeben, falls sie es blockiert
 - [x] Belegung `bridge/mappings/loupedeck-plus-captureone.json`: Beschriftung → Capture-One-Regler/-Aktion/Tastenkürzel, `perTick` pro Regler, Beschleunigung einstellbar
 - [x] Bridge-Prototyp `bridge/stellwerk.swift` (Swift, CoreMIDI + Network): MIDI rein → Tangent raus, Beschleunigung, Deltas alle 15 ms gebündelt, Drücken = zurücksetzen, Startwerte abfragen, Simulation übers Terminal. **Mit echtem Capture One getestet** ✅ (Regler, Reset, Aktionen), Test-Client `bridge/fake_captureone.py`
