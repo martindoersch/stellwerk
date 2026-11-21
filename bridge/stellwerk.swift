@@ -96,9 +96,11 @@ final class TangentHub {
 
     func start() {
         let params = NWParameters.tcp
-        params.requiredInterfaceType = .loopback   // nur lokal erreichbar
+        // Fest an 127.0.0.1 binden: nur lokal erreichbar, nicht im WLAN
+        // (requiredInterfaceType = .loopback allein lauschte trotzdem auf *:64246)
+        params.requiredLocalEndpoint = NWEndpoint.hostPort(host: "127.0.0.1", port: 64246)
         params.allowLocalEndpointReuse = true
-        guard let l = try? NWListener(using: params, on: 64246) else {
+        guard let l = try? NWListener(using: params) else {
             print("❌ Port 64246 nicht verfügbar"); exit(1)
         }
         l.stateUpdateHandler = { state in

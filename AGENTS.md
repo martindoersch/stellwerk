@@ -30,6 +30,7 @@ Software-Surface ┘  (Touch/Maus, Web)     „Belichtung +0,05“            �
 
 ### Capture One: Tangent-Protokoll (TIPC) ✅ verifiziert 2026-11-21
 - Capture One verbindet sich als Client mit `127.0.0.1:64246` (dort lauscht normalerweise der Tangent Hub).
+- **Verbindet sich nur beim eigenen Start** und liest auch den Tangent-Schalter nur beim Start (getestet: kein Wiederverbinden, `defaults write` und Umschalten in den Einstellungen wirken erst nach Neustart). Hub fest an `127.0.0.1` binden, nicht `*`
 - **Unsere Bridge spielt den Hub.** Capture One meldet sich mit `ApplicationDefinition` an und beantwortet Wertabfragen.
 - Einstellung: `defaults write com.captureone.captureone16 TangentDeviceSupportEnableDefaultsKey -bool true` (in den Capture-One-Einstellungen sichtbar als Tangent-Unterstützung)
 - Regler-Liste: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml`, ausgewertet in **`docs/capture-one-controls.md`** (63 Regler, 429 Aktionen, nur ein Modus „Default")

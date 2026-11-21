@@ -61,6 +61,9 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] **Version 0.2** (2026-11-21): Einstellungsfenster. *Drehregler:* Geschwindigkeit, Beschleunigung (0 = aus), Fein/Grob-Faktoren. *Tasten:* jede Taste auf Vorgabe / Capture-One-Aktion (Suchliste) / eigenes Tastenkürzel (Aufnahme) / aus. Gespeichert als Überlagerung in `~/Library/Application Support/Stellwerk/settings.json`, Vorgabe bleibt unangetastet
 - [x] **Version 0.3** (2026-11-21): Einblendung beim Moduswechsel (Sterne/Farben/Tasten, Schwarzweiß/Farbbalance), unten mittig auf dem Bildschirm mit der Maus, ohne Fokusklau; abschaltbar im neuen Reiter „Allgemein" (dort auch Autostart, Belegungsordner)
 - [x] Absturz beim Moduswechsel behoben: NSHostingView steuerte die Fenstergröße der Einblendung → Layout-Schleife (`sizingOptions = []`). Nachgestellt und geprüft mit `bridge/fake_loupedeck.swift`
+- [x] Neu verbinden ohne Neustart geprüft (2026-11-21): **geht nicht.** Capture One verbindet nicht von selbst (20 s gewartet), reagiert nicht auf `defaults write` des Tangent-Schalters, und der Schalter in den Einstellungen verlangt selbst einen Neustart. Kein Tangent im AppleScript-Wörterbuch → Neustart ist der einzige Weg
+- [x] Sicherheit: Hub lauschte auf allen Schnittstellen (`*:64246`, also im WLAN erreichbar), obwohl `requiredInterfaceType = .loopback` gesetzt war → jetzt fest an `127.0.0.1` gebunden (App und Prototyp)
+- [ ] Knopf „Capture One neu starten" im Menü, wenn Capture One läuft, aber nicht verbunden ist
 - [ ] **Martin:** v0.3 testen
 - [ ] Ganz zum Schluss: Custom Mode (zweite Belegung aller Tasten)
 - [ ] Belegungsdateien: `app/Stellwerk/Mappings/` ist jetzt die Hauptquelle; `bridge/mappings/` nur noch für den Prototyp
