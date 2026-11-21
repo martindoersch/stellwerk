@@ -37,7 +37,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Bridge-Prototyp `bridge/stellwerk.swift` (Swift, CoreMIDI + Network): MIDI rein → Tangent raus, Beschleunigung, Deltas alle 15 ms gebündelt, Drücken = zurücksetzen, Startwerte abfragen, Simulation übers Terminal. **Mit echtem Capture One getestet** ✅ (Regler, Reset, Aktionen), Test-Client `bridge/fake_captureone.py`
 - [x] Echte Regler getestet (2026-11-21): **Empfindlichkeit perfekt**, mehrere Regler gleichzeitig drehen funktioniert („WOW") ✅. Copy `0xFC` ✅. Paste `0xFD` öffnete Dialog „Anpassungen einfügen" und hing → jetzt Menü ⇧⌘V (testen; Alternative `0x16D`)
 - [x] Getestet ✅: Alt/⌥ = fein, Shift/⇧ = grob; `--/Clr` = Sterne ↔ Farben, Fn + `--/Clr` = Modifier-Modus, Fn + Taste = löschen; Paste über Menü ⇧⌘V
-- [ ] Modifier-Modus: Loupedeck-Tasten Shift/Ctrl/Cmd/Alt/Tab senden jetzt **echte Tasten** (Martin: Standard-Tasten wichtiger als Fein/Grob, beides zusammen ok). Testen, ob gehaltenes Shift/Cmd auch mit Maus-Klicks wirkt
+- [x] Modifier-Modus: Loupedeck-Tasten Shift/Ctrl/Cmd/Alt/Tab wirken als **echte Tasten**, auch mit Maus-Klicks ✅ (Martin: Standard-Tasten wichtiger als Fein/Grob, beides zusammen ok). Gemeldete Modifier allein reichen nicht – echte Mausklicks tragen nur den Zustand der echten Tastatur → **Event-Tap** setzt die gehaltenen Loupedeck-Modifier bei Maus-/Tastatur-Ereignissen dazu
 - [ ] Belegung für die 8 Farbregler und P1–P8/C1–C6 überlegen (Capture One hat über Tangent kein HSL pro Farbe → Color Balance? Ebenen?)
 
 ## Phase 2b — Software-Surface (früh, als Testwerkzeug)

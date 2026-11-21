@@ -431,10 +431,40 @@ func postRealKey(_ name: String, down: Bool) {
     if down { realDown.insert(name) } else { realDown.remove(name) }
     var flags: CGEventFlags = []
     for n in realDown { if let f = realKeyCodes[n]?.flag { flags.insert(f) } }
+    extraFlagsLock.lock(); extraFlags = flags.rawValue; extraFlagsLock.unlock()
     let e = CGEvent(keyboardEventSource: CGEventSource(stateID: .hidSystemState), virtualKey: k.code, keyDown: down)
     if k.flag != nil { e?.type = .flagsChanged }
     e?.flags = flags
     e?.post(tap: .cghidEventTap)
+}
+
+// Event-Tap: Echte Maus- und Tastatur-Ereignisse tragen nur den Zustand der echten Tastatur.
+// Solange am Loupedeck Shift/Cmd/… gehalten wird, setzen wir die Taste hier dazu.
+let extraFlagsLock = NSLock()
+var extraFlags: UInt64 = 0
+var modifierTap: CFMachPort?
+
+func startModifierTap() {
+    let types: [CGEventType] = [.leftMouseDown, .leftMouseUp, .leftMouseDragged, .rightMouseDown, .rightMouseUp,
+                                .rightMouseDragged, .otherMouseDown, .otherMouseUp, .scrollWheel,
+                                .keyDown, .keyUp, .flagsChanged]
+    let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
+    modifierTap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
+                                    eventsOfInterest: mask, callback: { _, type, event, _ in
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let t = modifierTap { CGEvent.tapEnable(tap: t, enable: true) }
+            return Unmanaged.passUnretained(event)
+        }
+        extraFlagsLock.lock(); let extra = extraFlags; extraFlagsLock.unlock()
+        if extra != 0 { event.flags = CGEventFlags(rawValue: event.flags.rawValue | extra) }
+        return Unmanaged.passUnretained(event)
+    }, userInfo: nil)
+    guard let tap = modifierTap else {
+        print("⚠️  Event-Tap nicht möglich – Bedienungshilfen-Freigabe fürs Terminal prüfen"); return
+    }
+    CFRunLoopAddSource(CFRunLoopGetMain(), CFMachPortCreateRunLoopSource(nil, tap, 0), .commonModes)
+    CGEvent.tapEnable(tap: tap, enable: true)
+    print("⌨️  Event-Tap aktiv (Loupedeck-Modifier wirken auf Maus und Tastatur)")
 }
 
 /// Beim Beenden nichts „hängen" lassen
@@ -523,6 +553,7 @@ if !midiConnected { print("ℹ️  Loupedeck+ nicht gefunden – nur Simulation 
 // MARK: - Terminal
 
 hub.start()
+DispatchQueue.main.async { startModifierTap() }
 Thread {
     while let line = readLine() {
         let parts = line.split(separator: " ").map(String.init)
