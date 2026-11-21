@@ -51,10 +51,15 @@ final class KeyOutput {
         // die wir gerade nach vorne geholt haben. postToPid landete teils im Terminal.
         if !k.flags.contains(.maskCommand) { onLog?("Taste \(prettyKeys(k.text))") }
         else { onLog?("kein Menüeintrag für \(prettyKeys(k.text)) → Tastendruck") }
+        // Gehaltene Modifier (Mac-Tastatur oder Loupedeck im Tasten-Modus) wirken mit, z. B. Shift + Pfeil
+        let live = CGEventSource.flagsState(.combinedSessionState)
+            .intersection([.maskShift, .maskControl, .maskAlternate, .maskCommand])
+        var flags = k.flags.union(live).union(CGEventFlags(rawValue: ModifierTap.extra))
+        if (123...126).contains(k.code) { flags.formUnion([.maskNumericPad, .maskSecondaryFn]) }   // Pfeiltasten wie echt
         let src = CGEventSource(stateID: .hidSystemState)
         for down in [true, false] {
             let e = CGEvent(keyboardEventSource: src, virtualKey: k.code, keyDown: down)
-            e?.flags = k.flags
+            e?.flags = flags
             e?.post(tap: .cghidEventTap)
         }
     }
@@ -126,6 +131,9 @@ enum ModifierTap {
     }
 
     static var isRunning: Bool { tap != nil }
+
+    /// Gerade am Gerät gehaltene Modifier
+    nonisolated static var extra: UInt64 { currentExtra() }
 
     @discardableResult
     static func start() -> Bool {
