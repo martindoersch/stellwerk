@@ -14,12 +14,15 @@ struct StatusView: View {
             HStack {
                 Text("Stellwerk").font(.headline)
                 Spacer()
-                Text("Loupedeck+ → Capture One").font(.caption).foregroundStyle(.secondary)
+                Text("Loupedeck+ · TourBox → Capture One").font(.caption).foregroundStyle(.secondary)
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                StatusRow(ok: engine.deviceName != nil, title: "Loupedeck+",
-                          detail: engine.deviceName != nil ? "verbunden" : "nicht gefunden")
+                ForEach(DeviceID.allCases, id: \.self) { id in
+                    let d = engine.device(id)
+                    StatusRow(ok: d.connectedName != nil, warn: true, title: d.name,
+                              detail: d.connectedName != nil ? "verbunden" : "nicht angeschlossen")
+                }
                 StatusRow(ok: engine.hubState.isConnected, warn: !engine.hubState.isFailed,
                           title: "Capture One", detail: hubText)
                 if engine.captureOneRunning && engine.hubState == .listening {
@@ -42,6 +45,9 @@ struct StatusView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 6) {
+                if engine.settings.targetMode == .frontmost {
+                    LabeledContent("Profil", value: engine.activeProfileName)
+                }
                 LabeledContent("Tasten 1–5", value: engine.keyMode.rawValue)
                 LabeledContent("Farbregler", value: engine.bwActive ? "Schwarzweiß" : "Farbbalance")
                 LabeledContent("Belichtung", value: engine.value(of: "Exposure") ?? "–")

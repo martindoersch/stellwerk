@@ -1,17 +1,24 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
+    /// Fenstertitel – die Engine erkennt daran, ob die Einstellungen vorne sind (Anlernen)
+    static let windowTitle = "Stellwerk – Einstellungen"
+
     @Bindable var engine: Engine
 
     var body: some View {
-        TabView {
+        TabView(selection: $engine.settingsTab) {
             DialSettingsView(engine: engine)
                 .tabItem { Label("Drehregler", systemImage: "dial.medium") }
+                .tag(Engine.SettingsTab.dials)
             ButtonSettingsView(engine: engine)
                 .tabItem { Label("Tasten", systemImage: "square.grid.3x3") }
+                .tag(Engine.SettingsTab.buttons)
             GeneralSettingsView(engine: engine)
                 .tabItem { Label("Allgemein", systemImage: "gearshape") }
+                .tag(Engine.SettingsTab.general)
         }
         .frame(width: 560, height: 520)
         .tint(.lime)
@@ -25,6 +32,19 @@ private struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
+            Section {
+                Picker("Tasten und Drehregler wirken", selection: Binding(
+                    get: { engine.settings.targetMode }, set: { v in engine.updateSettings { $0.targetMode = v } })) {
+                    Text("Immer in Capture One").tag(TargetMode.captureOne)
+                    Text("Im aktiven Programm (Profile)").tag(TargetMode.frontmost)
+                }
+                .pickerStyle(.radioGroup)
+            } header: {
+                Text("Programme")
+            } footer: {
+                Text("Immer in Capture One: wirkt auch, wenn ein anderes Programm vorne ist. Im aktiven Programm: Programme mit eigenem Profil (Tab „Tasten\") bekommen ihre Tastenkürzel, alle anderen die Capture-One-Belegung.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("Anzeige") {
                 Toggle("Moduswechsel einblenden", isOn: Binding(
                     get: { engine.settings.showHUD }, set: { v in engine.updateSettings { $0.showHUD = v } }))
@@ -123,30 +143,86 @@ private struct SliderRow: View {
 private struct ButtonSettingsView: View {
     @Bindable var engine: Engine
     @State private var editing: EditTarget?
+    @State private var highlighted: String?   // Zeile der zuletzt am Gerät gedrückten Taste
+    @State private var highlightedFn = false  // … mit gehaltener Fn-Taste gedrückt
+    @State private var highlightedDevice = DeviceID.loupedeck
 
-    struct EditTarget: Identifiable { let name: String; let fn: Bool; var id: String { (fn ? "fn:" : "") + name } }
+    struct EditTarget: Identifiable {
+        let name: String; let fn: Bool; var dial = false
+        var id: String { (dial ? "dial:" : fn ? "fn:" : "") + name }
+    }
+
+    /// Bearbeitetes Programmprofil (nil = Capture One)
+    private var app: AppProfile? { engine.editingProfile.flatMap(engine.appProfile) }
 
     var body: some View {
         VStack(spacing: 0) {
-            List {
-                ForEach(engine.profile.buttons, id: \.self) { name in
-                    row(name)
+            DevicePicker(engine: engine)
+                .padding([.horizontal, .top], 10)
+            ProfileBar(engine: engine)
+                .padding([.horizontal, .top], 10).padding(.bottom, 6)
+            if app != nil && engine.settings.targetMode != .frontmost {
+                Text("Profile wirken erst mit „Im aktiven Programm\" (Allgemein).")
+                    .font(.caption).foregroundStyle(.orange).padding(.bottom, 6)
+            }
+            if engine.menuShortcuts[app?.bundleID ?? Engine.captureOneBundleID] == nil {
+                Text("\(app?.name ?? "Capture One") läuft nicht – Menüeinträge zu den Kürzeln erscheinen, sobald es läuft.")
+                    .font(.caption).foregroundStyle(.secondary).padding(.bottom, 6)
+            }
+            ScrollViewReader { proxy in
+                List {
+                    // Die ForEach-Kennung ist zugleich das Sprungziel (ein extra .id greift in macOS-Listen nicht)
+                    Section("Tasten") {
+                        ForEach(engine.profile.buttons.map { "b:" + $0 }, id: \.self) { key in
+                            let name = String(key.dropFirst(2))
+                            Group { if let app { appRow(name, app) } else { row(name) } }
+                                .listRowBackground(isHighlighted(key) ? Color.lime.opacity(0.3) : nil)
+                        }
+                    }
+                    if let app {
+                        Section("Drehregler") {
+                            ForEach(engine.profile.dials.map { "d:" + $0 }, id: \.self) { key in
+                                dialRow(String(key.dropFirst(2)), app)
+                                    .listRowBackground(isHighlighted(key) ? Color.lime.opacity(0.3) : nil)
+                            }
+                        }
+                    }
                 }
+                .onChange(of: engine.learned) { _, l in jump(to: l, proxy) }
+                // Kam der Tastendruck aus einem anderen Tab, entsteht die Liste erst jetzt
+                .onAppear { jump(to: engine.learned, proxy) }
             }
             HStack {
-                Text("Fn … = Belegung bei gehaltener Fn-Taste. Drehregler-Drücken setzt immer den Regler zurück.")
+                let fn = engine.fnLabel
+                Text(app == nil
+                     ? "Taste am Gerät drücken, um sie hier zu finden (mit \(fn): \(fn)-Ebene). Drehregler-Drücken setzt den Regler zurück."
+                     : "Taste drücken oder Drehregler drehen, um sie hier zu finden (mit \(fn): \(fn)-Ebene).")
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Button("Alle zurücksetzen") {
-                    engine.updateSettings { $0.buttons.removeAll(); $0.fnButtons.removeAll() }
+                if app == nil {
+                    Button("Alle zurücksetzen") { engine.resetButtons() }
+                        .disabled(engine.deviceSettings.buttons.isEmpty && engine.deviceSettings.fnButtons.isEmpty)
                 }
-                .disabled(engine.settings.buttons.isEmpty && engine.settings.fnButtons.isEmpty)
             }
             .padding(10)
         }
+        .onChange(of: engine.editingProfile) { highlighted = nil; engine.refreshMenuShortcuts() }
+        // Menüs neu lesen, wenn man zurückkommt – vielleicht wurden Kürzel in Capture One geändert
+        .task {
+            engine.refreshMenuShortcuts()
+            for await _ in NotificationCenter.default.notifications(named: NSApplication.didBecomeActiveNotification) {
+                engine.refreshMenuShortcuts()
+            }
+        }
         .sheet(item: $editing) { t in
             VStack(spacing: 0) {
-                ButtonEditor(engine: engine, name: t.name, fn: t.fn)
+                if let app, t.dial {
+                    DialKeyEditor(engine: engine, name: t.name, bundleID: app.bundleID)
+                } else if let app {
+                    AppButtonEditor(engine: engine, name: t.name, fn: t.fn, bundleID: app.bundleID)
+                } else {
+                    ButtonEditor(engine: engine, name: t.name, fn: t.fn)
+                }
                 HStack {
                     Spacer()
                     Button("Fertig") { editing = nil }.keyboardShortcut(.defaultAction)
@@ -156,19 +232,87 @@ private struct ButtonSettingsView: View {
         }
     }
 
+    /// Nur hinspringen und hervorheben – belegen wählt man selbst
+    private func jump(to l: Engine.Learned?, _ proxy: ScrollViewProxy) {
+        guard let l else { return }
+        let key = (l.dial ? "d:" : "b:") + l.name
+        highlighted = key
+        highlightedDevice = l.device
+        highlightedFn = l.fn && !l.dial
+        // Erst nach dem Neuzeichnen scrollen, sonst kennt die Liste das Ziel evtl. noch nicht
+        DispatchQueue.main.async {
+            withAnimation { proxy.scrollTo(key, anchor: .center) }
+        }
+    }
+
+    /// Hervorhebung gilt nur für das Gerät, an dem gedrückt wurde
+    private func isHighlighted(_ key: String) -> Bool { highlighted == key && highlightedDevice == engine.editingDevice }
+
+    /// Zeile im Programmprofil: nur Tastenkürzel
+    @ViewBuilder
+    private func appRow(_ name: String, _ p: AppProfile) -> some View {
+        HStack {
+            Text(name).frame(width: 110, alignment: .leading)
+            if let role = engine.specialRole(name, inAppProfile: true) {
+                Text(role).foregroundStyle(.secondary)
+                Spacer()
+            } else {
+                let b = engine.appBindings(p.bundleID)
+                let m = engine.appMapping(p.bundleID)
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 6) {
+                        Text(b.buttons[name].map(prettyKeys) ?? "–")
+                            .foregroundStyle(b.buttons[name] == nil ? .secondary : .primary)
+                        MenuHint(engine: engine, combo: m?.buttons[name], app: p.bundleID)
+                    }
+                    if let fn = b.fnButtons[name] {
+                        HStack(spacing: 6) {
+                            Text("\(engine.fnLabel): \(prettyKeys(fn))").font(.caption).foregroundStyle(.secondary)
+                            MenuHint(engine: engine, combo: m?.fnButtons[name], app: p.bundleID)
+                        }
+                    }
+                }
+                Spacer()
+                editButton("Ändern …", name: name, fn: false)
+                editButton("\(engine.fnLabel) …", name: name, fn: true)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func dialRow(_ name: String, _ p: AppProfile) -> some View {
+        let d = engine.appBindings(p.bundleID).dials[name] ?? DialKeys()
+        HStack {
+            Text(name).lineLimit(1).frame(width: 170, alignment: .leading)
+            Text(d.isEmpty ? "–" : "← \(d.left.map(prettyKeys) ?? "–")   → \(d.right.map(prettyKeys) ?? "–")   Drücken \(d.press.map(prettyKeys) ?? "–")")
+                .foregroundStyle(d.isEmpty ? .secondary : .primary)
+            Spacer()
+            Button("Ändern …") { editing = EditTarget(name: name, fn: false, dial: true) }
+                .controlSize(.small)
+        }
+    }
+
     @ViewBuilder
     private func row(_ name: String) -> some View {
-        let changed = engine.settings.buttons[name] != nil || engine.settings.fnButtons[name] != nil
+        let changed = engine.deviceSettings.buttons[name] != nil || engine.deviceSettings.fnButtons[name] != nil
         HStack {
             Text(name).frame(width: 110, alignment: .leading)
             if let role = engine.specialRole(name) {
                 Text(role).foregroundStyle(.secondary)
                 Spacer()
             } else {
-                Text(engine.describe(engine.mapping.buttons[name]))
-                    .foregroundStyle(engine.mapping.buttons[name] == nil ? .secondary : .primary)
-                if let fn = engine.mapping.fnButtons[name] {
-                    Text("Fn: \(engine.describe(fn))").font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 6) {
+                        Text(engine.describe(engine.mapping.buttons[name]))
+                            .foregroundStyle(engine.mapping.buttons[name] == nil ? .secondary : .primary)
+                        MenuHint(engine: engine, binding: engine.mapping.buttons[name])
+                    }
+                    if let fn = engine.mapping.fnButtons[name] {
+                        HStack(spacing: 6) {
+                            Text("\(engine.fnLabel): \(engine.describe(fn))").font(.caption).foregroundStyle(.secondary)
+                            MenuHint(engine: engine, binding: fn)
+                        }
+                    }
                 }
                 if changed {
                     Text("geändert")
@@ -179,16 +323,70 @@ private struct ButtonSettingsView: View {
                 }
                 Spacer()
                 editButton("Ändern …", name: name, fn: false)
-                editButton("Fn …", name: name, fn: true)
+                editButton("\(engine.fnLabel) …", name: name, fn: true)
+            }
+        }
+    }
+}
+
+/// Auswahl des Geräts, dessen Tasten bearbeitet werden – mit Verbindungsstatus
+private struct DevicePicker: View {
+    @Bindable var engine: Engine
+
+    var body: some View {
+        Picker("Gerät", selection: $engine.editingDevice) {
+            ForEach(DeviceID.allCases, id: \.self) { id in
+                let d = engine.device(id)
+                Text("\(d.connectedName != nil ? "●" : "○") \(d.name)").tag(id)
+            }
+        }
+        .pickerStyle(.segmented)
+        .help("● verbunden, ○ nicht angeschlossen. Taste an einem Gerät drücken wechselt automatisch dorthin.")
+    }
+}
+
+/// Klein neben einem Kürzel: welcher Menüeintrag im Programm gerade dieses Kürzel hat
+/// (aus dem echten Menü gelesen – zeigt also auch selbst vergebene Kürzel)
+private struct MenuHint: View {
+    let engine: Engine
+    let combo: KeyCombo?
+    var app: String?   // nil = Capture One
+
+    init(engine: Engine, combo: KeyCombo?, app: String?) {
+        self.engine = engine; self.combo = combo; self.app = app
+    }
+
+    init(engine: Engine, binding: ButtonBinding?) {
+        self.engine = engine
+        if case .keys(let k)? = binding { combo = k } else { combo = nil }
+    }
+
+    var body: some View {
+        if let combo {
+            switch engine.menuMatch(combo, in: app) {
+            case .item(let title):
+                Text("→ \(title)").font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.head).help(title)
+            case .missing:
+                Text("kein Menüeintrag").font(.caption).foregroundStyle(.orange)
+                    .help("Im Menü gibt es kein Kürzel \(prettyKeys(combo.text)) – es wird als Tastendruck geschickt.")
+            case .notRunning, .plainKey:
+                EmptyView()
             }
         }
     }
 }
 
 extension ButtonSettingsView {
+    /// Knopf der zuletzt am Gerät gedrückten Ebene (normal oder Fn) wird betont
+    @ViewBuilder
     private func editButton(_ title: String, name: String, fn: Bool) -> some View {
-        Button(title) { editing = EditTarget(name: name, fn: fn) }
-            .controlSize(.small)
+        let button = Button(title) { editing = EditTarget(name: name, fn: fn) }.controlSize(.small)
+        if highlighted == "b:" + name && highlightedFn == fn {
+            button.buttonStyle(.borderedProminent).foregroundStyle(.black)
+        } else {
+            button
+        }
     }
 }
 
@@ -203,7 +401,7 @@ private struct ButtonEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(fn ? "Fn + \(name)" : name).font(.headline)
+            Text(fn ? "\(engine.fnLabel) + \(name)" : name).font(.headline)
             Picker("", selection: $kind) {
                 ForEach(Kind.allCases, id: \.self) { Text($0.rawValue) }
             }
@@ -223,6 +421,7 @@ private struct ButtonEditor: View {
                 Text("Die Taste macht nichts.").foregroundStyle(.secondary)
             case .keys:
                 ShortcutRecorder(current: currentKeys) { set(.keys($0)) }
+                MenuHint(engine: engine, binding: engine.binding(name, fn: fn))
                 Text("Wird an Capture One geschickt (über das Menü, wenn es dort einen Eintrag mit diesem Kürzel gibt).")
                     .font(.caption).foregroundStyle(.secondary)
             case .action:
@@ -277,6 +476,147 @@ private struct ButtonEditor: View {
     }
 }
 
+// MARK: - Programmprofile
+
+/// Auswahl des bearbeiteten Profils: Capture One oder ein anderes Programm
+private struct ProfileBar: View {
+    @Bindable var engine: Engine
+    @State private var confirmDelete = false
+
+    var body: some View {
+        HStack {
+            Picker("Profil", selection: $engine.editingProfile) {
+                Text("Capture One").tag(String?.none)
+                ForEach(engine.settings.appProfiles) { p in
+                    Text(p.name).tag(Optional(p.bundleID))
+                }
+            }
+            .frame(maxWidth: 260)
+            Menu {
+                ForEach(candidates, id: \.processIdentifier) { app in
+                    Button(app.localizedName ?? app.bundleIdentifier ?? "?") {
+                        if let id = app.bundleIdentifier { engine.addAppProfile(bundleID: id, name: app.localizedName ?? id) }
+                    }
+                }
+                if !candidates.isEmpty { Divider() }
+                Button("Anderes Programm …") { pickApp() }
+            } label: {
+                Label("Programm hinzufügen", systemImage: "plus")
+            }
+            .fixedSize()
+            if let id = engine.editingProfile {
+                Button { confirmDelete = true } label: { Image(systemName: "trash") }
+                    .help("Profil löschen")
+                    .confirmationDialog("Profil „\(engine.appProfile(id)?.name ?? id)\" löschen?", isPresented: $confirmDelete) {
+                        Button("Löschen", role: .destructive) { engine.removeAppProfile(id) }
+                    }
+            }
+            Spacer()
+        }
+    }
+
+    /// Laufende Programme ohne eigenes Profil
+    private var candidates: [NSRunningApplication] {
+        NSWorkspace.shared.runningApplications
+            .filter { app in
+                guard app.activationPolicy == .regular, let id = app.bundleIdentifier else { return false }
+                return id != Bundle.main.bundleIdentifier && id != Engine.captureOneBundleID && engine.appProfile(id) == nil
+            }
+            .sorted { ($0.localizedName ?? "") < ($1.localizedName ?? "") }
+    }
+
+    private func pickApp() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        guard panel.runModal() == .OK, let url = panel.url, let id = Bundle(url: url)?.bundleIdentifier else { return }
+        engine.addAppProfile(bundleID: id, name: url.deletingPathExtension().lastPathComponent)
+    }
+}
+
+/// Taste im Programmprofil: ein Tastenkürzel ans vordere Programm
+private struct AppButtonEditor: View {
+    @Bindable var engine: Engine
+    let name: String
+    let fn: Bool
+    let bundleID: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("\(fn ? "\(engine.fnLabel) + " : "")\(name) – \(profileName)").font(.headline)
+            ShortcutRecorder(current: current) { engine.setAppKeys($0, for: name, fn: fn, in: bundleID) }
+            MenuHint(engine: engine, combo: current.flatMap { Keys.parse($0) }, app: bundleID)
+            HStack {
+                Text("Wird an \(profileName) geschickt, wenn es vorne ist.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button("Entfernen") { engine.setAppKeys(nil, for: name, fn: fn, in: bundleID) }
+                    .disabled(current == nil)
+            }
+        }
+        .padding(14)
+        .frame(width: 440)
+    }
+
+    private var profileName: String { engine.appProfile(bundleID)?.name ?? bundleID }
+
+    private var current: String? {
+        let b = engine.appBindings(bundleID)
+        return fn ? b.fnButtons[name] : b.buttons[name]
+    }
+}
+
+/// Drehregler im Programmprofil: Kürzel für links, rechts und Drücken
+private struct DialKeyEditor: View {
+    @Bindable var engine: Engine
+    let name: String
+    let bundleID: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("\(name) – \(engine.appProfile(bundleID)?.name ?? bundleID)").font(.headline)
+            slot("Nach links", \.left)
+            slot("Nach rechts", \.right)
+            slot("Drücken", \.press)
+            Text("Pro Raste ein Tastendruck, z. B. ⌘− / ⌘+ zum Zoomen oder Pfeiltasten.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(width: 440)
+    }
+
+    private var keys: DialKeys { engine.appBindings(bundleID).dials[name] ?? DialKeys() }
+
+    private func slot(_ title: String, _ kp: WritableKeyPath<DialKeys, String?>) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            slotRow(title, kp)
+            MenuHint(engine: engine, combo: keys[keyPath: kp].flatMap { Keys.parse($0) }, app: bundleID)
+                .padding(.leading, 98)
+        }
+    }
+
+    private func slotRow(_ title: String, _ kp: WritableKeyPath<DialKeys, String?>) -> some View {
+        HStack {
+            Text(title).frame(width: 90, alignment: .leading)
+            ShortcutRecorder(current: keys[keyPath: kp]) { v in
+                var d = keys
+                d[keyPath: kp] = v
+                engine.setAppDial(d, for: name, in: bundleID)
+            }
+            Button {
+                var d = keys
+                d[keyPath: kp] = nil
+                engine.setAppDial(d, for: name, in: bundleID)
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+            }
+            .buttonStyle(.borderless)
+            .disabled(keys[keyPath: kp] == nil)
+            .help("Entfernen")
+        }
+    }
+}
+
 // MARK: - Kürzel aufnehmen
 
 struct ShortcutRecorder: View {
@@ -325,7 +665,7 @@ struct ShortcutRecorder: View {
         if let n = named[ev.keyCode] {
             parts.append(n)
         } else if let c = ev.characters(byApplyingModifiers: [])?.lowercased(), c.count == 1 {
-            parts.append(c)
+            parts.append(c == "+" ? "plus" : c)
         } else {
             return nil
         }

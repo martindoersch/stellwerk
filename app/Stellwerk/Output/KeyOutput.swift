@@ -42,8 +42,15 @@ final class KeyOutput {
         }
     }
 
-    private func deliver(_ k: KeyCombo, to app: NSRunningApplication) {
-        if let title = pressMenuItem(pid: app.processIdentifier, k) {
+    /// Kürzel ans vordere Programm (Programmprofile). Ohne Menüsuche = schneller, z. B. für Drehregler.
+    func sendToFront(_ k: KeyCombo, viaMenu: Bool = true) {
+        guard Accessibility.isTrusted else { onLog?("⚠️ Bedienungshilfen-Freigabe fehlt"); return }
+        guard let app = NSWorkspace.shared.frontmostApplication else { return }
+        deliver(k, to: app, viaMenu: viaMenu)
+    }
+
+    private func deliver(_ k: KeyCombo, to app: NSRunningApplication, viaMenu: Bool = true) {
+        if viaMenu, let title = pressMenuItem(pid: app.processIdentifier, k) {
             onLog?("Menü „\(title)\"")
             return
         }
@@ -64,19 +71,52 @@ final class KeyOutput {
         }
     }
 
-    /// Sucht in der Menüleiste den Eintrag mit diesem Kürzel und klickt ihn; liefert dessen Titel.
-    private func pressMenuItem(pid: pid_t, _ k: KeyCombo) -> String? {
-        guard let ch = k.char, k.flags.contains(.maskCommand) else { return nil }
-        // Modifier-Kodierung der Bedienungshilfen: Shift 1, Option 2, Control 4 (⌘ ist Standard)
+    /// Modifier-Kodierung der Bedienungshilfen: Shift 1, Option 2, Control 4, ohne ⌘ 8 (⌘ ist Standard)
+    private static func axModifiers(_ k: KeyCombo) -> Int {
         var mods = 0
         if k.flags.contains(.maskShift) { mods |= 1 }
         if k.flags.contains(.maskAlternate) { mods |= 2 }
         if k.flags.contains(.maskControl) { mods |= 4 }
+        if !k.flags.contains(.maskCommand) { mods |= 8 }
+        return mods
+    }
 
-        func attr(_ el: AXUIElement, _ name: String) -> CFTypeRef? {
-            var v: CFTypeRef?
-            return AXUIElementCopyAttributeValue(el, name as CFString, &v) == .success ? v : nil
+    private static func attr(_ el: AXUIElement, _ name: String) -> CFTypeRef? {
+        var v: CFTypeRef?
+        return AXUIElementCopyAttributeValue(el, name as CFString, &v) == .success ? v : nil
+    }
+
+    /// Schlüssel für das Verzeichnis der Menü-Kürzel
+    static func menuKey(_ k: KeyCombo) -> String? { k.char.map { "\(axModifiers(k)):\($0)" } }
+
+    /// Alle Kürzel aus der Menüleiste eines Programms → „Menü › Eintrag" (auch selbst vergebene Kürzel)
+    static func menuShortcuts(pid: pid_t) -> [String: String] {
+        var out: [String: String] = [:]
+        func walk(_ el: AXUIElement, path: [String], depth: Int) {
+            let title = attr(el, kAXTitleAttribute) as? String ?? ""
+            if let c = attr(el, kAXMenuItemCmdCharAttribute) as? String, !c.isEmpty, !title.isEmpty {
+                let mods = attr(el, kAXMenuItemCmdModifiersAttribute) as? Int ?? 0
+                let key = "\(mods):\(c.uppercased())"
+                if out[key] == nil { out[key] = (path + [title]).joined(separator: " › ") }
+            }
+            guard depth < 8, let kids = attr(el, kAXChildrenAttribute) as? [AXUIElement] else { return }
+            // Nur Titel von Menüs/Einträgen in den Pfad, nicht die unsichtbaren Menü-Container
+            let next = depth > 0 && !title.isEmpty && title != path.last ? path + [title] : path
+            for kid in kids { walk(kid, path: next, depth: depth + 1) }
         }
+        let appEl = AXUIElementCreateApplication(pid)
+        if let bar = attr(appEl, kAXMenuBarAttribute), CFGetTypeID(bar) == AXUIElementGetTypeID() {
+            walk(bar as! AXUIElement, path: [], depth: 0)
+        }
+        return out
+    }
+
+    /// Sucht in der Menüleiste den Eintrag mit diesem Kürzel und klickt ihn; liefert dessen Titel.
+    private func pressMenuItem(pid: pid_t, _ k: KeyCombo) -> String? {
+        guard let ch = k.char, k.flags.contains(.maskCommand) else { return nil }
+        let mods = Self.axModifiers(k)
+        func attr(_ el: AXUIElement, _ name: String) -> CFTypeRef? { Self.attr(el, name) }
+
         func search(_ el: AXUIElement, depth: Int) -> AXUIElement? {
             if let c = attr(el, kAXMenuItemCmdCharAttribute) as? String, c.uppercased() == ch,
                (attr(el, kAXMenuItemCmdModifiersAttribute) as? Int ?? 0) == mods { return el }

@@ -12,7 +12,7 @@ struct StellwerkApp: App {
         }
         .menuBarExtraStyle(.window)
 
-        Window("Stellwerk – Einstellungen", id: "settings") {
+        Window(SettingsView.windowTitle, id: "settings") {
             SettingsView(engine: engine)
         }
         .windowResizability(.contentSize)

@@ -97,6 +97,7 @@ struct DeviceProfile {
     var dialByCC: [Int: String] = [:]
     var nameByNote: [Int: String] = [:]   // Tasten und Drücken der Drehregler
     var buttons: [String] = []            // echte Tasten, in sinnvoller Reihenfolge
+    var dials: [String] = []              // Drehregler, in sinnvoller Reihenfolge
 
     init() {}
 
@@ -106,11 +107,17 @@ struct DeviceProfile {
         // Drücken eines Drehreglers sendet die Note mit seiner CC-Nummer; echte Tasten haben Vorrang
         for (name, c) in controls { if let cc = c["cc"] as? Int { dialByCC[cc] = name; nameByNote[cc] = name } }
         for (name, c) in controls { if let note = c["note"] as? Int { nameByNote[note] = name } }
-        let order = ["Undo", "Redo", "Copy", "Paste", "Before/After", "Export", "Screen Mode", "Custom Mode"]
-            + (1...8).map { "P\($0)" } + (1...6).map { "C\($0)" } + ["L1", "L2", "L3", "Hue", "Sat", "Lum", "Clr/BW"]
-            + ["Pfeil links", "Pfeil rechts", "Pfeil oben", "Pfeil unten"]
+        // Reihenfolge aus der Gerätedatei ("order"/"dialOrder"), sonst die des Loupedeck+
+        var loupedeckOrder: [String] = ["Undo", "Redo", "Copy", "Paste", "Before/After", "Export", "Screen Mode", "Custom Mode"]
+        loupedeckOrder += (1...8).map { "P\($0)" } + (1...6).map { "C\($0)" }
+        loupedeckOrder += ["L1", "L2", "L3", "Hue", "Sat", "Lum", "Clr/BW", "Pfeil links", "Pfeil rechts", "Pfeil oben", "Pfeil unten"]
+        let order = json["order"] as? [String] ?? loupedeckOrder
         let names = controls.filter { $0.value["note"] != nil }.map(\.key)
         buttons = order.filter(names.contains) + names.filter { !order.contains($0) }.sorted()
+        let dialOrder = json["dialOrder"] as? [String] ?? ["Control Dial (großes Rad)", "Exposure", "Contrast", "Clarity",
+                         "Shadows", "Highlights", "Whites", "Blacks", "Vibrance", "Saturation", "White Balance / Temp", "Tint", "D1", "D2"]
+        let dialNames = controls.filter { $0.value["cc"] != nil }.map(\.key)
+        dials = dialOrder.filter(dialNames.contains) + dialNames.filter { !dialOrder.contains($0) }.sorted()
     }
 }
 
@@ -151,6 +158,7 @@ enum Keys {
             case "shift": flags.insert(.maskShift)
             case "alt", "opt": flags.insert(.maskAlternate)
             case "ctrl": flags.insert(.maskControl)
+            case "plus": code = keyCode(for: "+"); char = "+"   // „+" ist im Format das Trennzeichen
             default:
                 code = named[part] ?? (part.count == 1 ? keyCode(for: part.first!) : nil)
                 if part.count == 1 { char = part.uppercased() }
@@ -176,7 +184,7 @@ func prettyKeys(_ s: String) -> String {
         case "cmd": mods += "⌘"
         default:
             let sym = ["left": "←", "right": "→", "up": "↑", "down": "↓", "return": "↩", "tab": "⇥",
-                       "space": "Leertaste", "delete": "⌫", "esc": "⎋"]
+                       "space": "Leertaste", "delete": "⌫", "esc": "⎋", "plus": "+"]
             key = sym[part] ?? part.uppercased()
         }
     }
@@ -189,6 +197,7 @@ enum ButtonBinding { case action(UInt32), keys(KeyCombo) }
 struct Mapping {
     var app = "Capture One"
     var dials: [String: DialBinding] = [:]
+    var fnDials: [String: DialBinding] = [:]       // Fn halten + drehen
     var buttons: [String: ButtonBinding] = [:]
     var fnButtons: [String: ButtonBinding] = [:]   // Fn halten + Taste
     var accel = Accel()
@@ -236,6 +245,7 @@ struct Mapping {
                           mediumMs: a["mediumMs"] ?? 45, mediumFactor: a["mediumFactor"] ?? 2)
         }
         dials = dialsFrom(entries(json["dials"]))
+        fnDials = dialsFrom(entries(json["fnDials"]))
         func buttonsFrom(_ raw: [String: [String: Any]]) -> [String: ButtonBinding] {
             var out: [String: ButtonBinding] = [:]
             for (name, v) in raw {
@@ -257,7 +267,7 @@ struct Mapping {
 
         let mode = json["modeKeys"] as? [String: Any] ?? [:]
         modeToggle = mode["toggle"] as? String
-        fnKey = mode["fn"] as? String ?? fnKey
+        fnKey = json["fn"] as? String ?? mode["fn"] as? String ?? fnKey   // Kombi-Taste, z. B. "Side" bei der TourBox
         modeKeys = mode["keys"] as? [String] ?? []
         starIDs = (mode["stars"] as? [String] ?? []).compactMap(hexID)
         colorIDs = (mode["colors"] as? [String] ?? []).compactMap(hexID)
@@ -272,11 +282,11 @@ struct Mapping {
         // IDs gegen controls.xml prüfen
         guard !catalog.items.isEmpty else { return }
         let buttonIDs = (Array(buttons.values) + Array(fnButtons.values)).compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
-        let dialIDs = (Array(dials.values) + Array(bwDials.values)).flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
+        let dialIDs = (Array(dials.values) + Array(fnDials.values) + Array(bwDials.values)).flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
         let all = Set(dialIDs + buttonIDs + starIDs + colorIDs + [starsClear, colorsClear, bwAction].compactMap { $0 })
         for id in all where catalog.items[id] == nil { warnings.append("\(hexStr(id)) steht nicht in controls.xml") }
     }
 
     /// Alle Regler-IDs, deren Startwert wir abfragen
-    var allParams: Set<UInt32> { Set((Array(dials.values) + Array(bwDials.values)).compactMap(\.param)) }
+    var allParams: Set<UInt32> { Set((Array(dials.values) + Array(fnDials.values) + Array(bwDials.values)).compactMap(\.param)) }
 }

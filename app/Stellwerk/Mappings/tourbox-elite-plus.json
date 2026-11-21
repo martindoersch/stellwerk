@@ -1,0 +1,23 @@
+{
+  "_hinweis": "TourBox Elite Plus per USB-Kabel. note = Tastencode (Loslassen = +0x80), cc = Code beim Drehen (+0x40 = rechts/rauf). Siehe docs/tourbox-protokoll.md",
+  "device": "TourBox Elite Plus",
+  "order": ["Tall", "Side", "Top", "Short", "Tour", "C1", "C2", "Knob", "Dial", "Scroll",
+            "Pfeil oben", "Pfeil unten", "Pfeil links", "Pfeil rechts"],
+  "dialOrder": ["Knob", "Dial", "Scroll"],
+  "controls": {
+    "Tall":         { "kind": "button", "note": 0 },
+    "Side":         { "kind": "button", "note": 1 },
+    "Top":          { "kind": "button", "note": 2 },
+    "Short":        { "kind": "button", "note": 3 },
+    "Pfeil oben":   { "kind": "button", "note": 16 },
+    "Pfeil unten":  { "kind": "button", "note": 17 },
+    "Pfeil links":  { "kind": "button", "note": 18 },
+    "Pfeil rechts": { "kind": "button", "note": 19 },
+    "C1":           { "kind": "button", "note": 34 },
+    "C2":           { "kind": "button", "note": 35 },
+    "Tour":         { "kind": "button", "note": 42 },
+    "Knob":         { "kind": "dial", "cc": 4,  "note": 55 },
+    "Dial":         { "kind": "dial", "cc": 15, "note": 56 },
+    "Scroll":       { "kind": "dial", "cc": 9,  "note": 10 }
+  }
+}
