@@ -18,7 +18,8 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Schreiben verifiziert: Belichtung 0 → 0,1 → 0,2 → 0,1 → 0, Capture One meldet jeden Wert zurück ✅
 - [x] Wiederverbinden geprüft: Capture One verbindet sich **nur beim Start** → Bridge muss vor Capture One laufen (oder Capture One neu starten). Später: Bridge startet beim Login
 - [x] `controls.xml` komplett ausgewertet: `bridge/parse_controls.py` erzeugt `docs/capture-one-controls.md` (Tabelle) und `bridge/mappings/capture-one-controls.json`. **63 Regler, 429 Aktionen, 34 Gruppen.** Nach Capture-One-Updates neu laufen lassen und per `git diff` prüfen
-- [ ] **Undo fehlt** in `controls.xml` (Redo `0x78` ist da). Mit dem Test-Hub `ActionOn 0x77` probieren; sonst Undo über AppleScript oder Tastenkürzel
+- [x] **Undo fehlt** in `controls.xml` (Redo `0x78` ist da). `ActionOn 0x77` getestet: wirkungslos → Bridge schickt ⌘Z als Tastenkürzel direkt an Capture One (layout-sicher, deutsch Z/Y)
+- [ ] ⌘Z über die Bridge in Capture One testen (braucht Bedienungshilfen-Freigabe fürs Terminal); Redo `0x78` testen
 - [ ] Doppelte Aktionen klären: z. B. Copy Adjustments `0xFC` (Adjustments) und `0x16C` (Cursor Tools), Rotate Left `0xF9` und `0x158`. Welche macht was?
 - [ ] Modi: Capture One meldet nur **einen** Modus („Default", `0x00010001`). Modi pro Werkzeug muss also die Bridge selbst verwalten (Ebenen im Mapping), nicht Capture One. Kurz testen, ob `ModeChange` trotzdem etwas bewirkt
 - [ ] Verhalten klären: Welcher Wert gilt bei mehreren ausgewählten Bildern? Was passiert ohne geöffnetes Bild?
@@ -30,8 +31,10 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Runde 1: 22 Drehregler mitgeschnitten (`bridge/mitschnitt-runde1-regler.log`): Kanal 1, Drehen = CC relativ (`01` = +1, `7F` = −1), Drücken = Note mit gleicher Nummer. CCs 33–48 (14 Regler) + 1–8 (Farbregler). Obere Regler senden ca. 3× so viele Schritte wie die Farbregler → Schrittweite pro Regler
 - [ ] **Martin:** `cd bridge && swift learn_loupedeck.swift` – geführtes Anlernen aller Regler und Tasten mit Sprachansage → `bridge/mappings/loupedeck-plus.json`
 - [ ] Loupedeck-Software beenden oder Gerät freigeben, falls sie es blockiert
-- [ ] Mapping-Datei (JSON/YAML): Loupedeck-Regler → Capture-One-Parameter, Tasten → Aktionen
-- [ ] Bridge-Prototyp: MIDI rein → Tangent-ParameterChange raus (Beschleunigung bei schnellem Drehen)
+- [x] Belegung `bridge/mappings/loupedeck-plus-captureone.json`: Beschriftung → Capture-One-Regler/-Aktion/Tastenkürzel, `perTick` pro Regler, Beschleunigung einstellbar
+- [x] Bridge-Prototyp `bridge/stellwerk.swift` (Swift, CoreMIDI + Network): MIDI rein → Tangent raus, Beschleunigung, Deltas alle 15 ms gebündelt, Drücken = zurücksetzen, Startwerte abfragen, Simulation übers Terminal. **Mit echtem Capture One getestet** ✅ (Regler, Reset, Aktionen), Test-Client `bridge/fake_captureone.py`
+- [ ] Nach dem Anlernen: echte Regler testen, `perTick` und Beschleunigung nach Gefühl einstellen
+- [ ] Belegung für die 8 Farbregler und P1–P8/C1–C6 überlegen (Capture One hat über Tangent kein HSL pro Farbe → Color Balance? Ebenen?)
 
 ## Phase 2b — Software-Surface (früh, als Testwerkzeug)
 

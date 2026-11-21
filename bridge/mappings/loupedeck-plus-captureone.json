@@ -1,0 +1,39 @@
+{
+  "_hinweis": "Belegung Loupedeck+ → Capture One. Namen = Beschriftungen aus learn_loupedeck.swift. IDs siehe docs/capture-one-controls.md. perTick = Wertänderung pro Rasterschritt (ohne Beschleunigung). Drücken eines Drehreglers setzt seinen Regler zurück.",
+  "app": "Capture One",
+  "acceleration": { "fastMs": 20, "fastFactor": 4, "mediumMs": 45, "mediumFactor": 2 },
+  "dials": {
+    "Exposure":             { "param": "0x26",  "perTick": 0.02 },
+    "Contrast":             { "param": "0x28",  "perTick": 0.5 },
+    "Clarity":              { "param": "0x32",  "perTick": 1 },
+    "Shadows":              { "param": "0x30",  "perTick": 1 },
+    "Highlights":           { "param": "0x2E",  "perTick": 1 },
+    "Whites":               { "param": "0x250", "perTick": 1 },
+    "Blacks":               { "param": "0x251", "perTick": 1 },
+    "Vibrance":             { "param": "0x33",  "perTick": 1, "_hinweis": "Capture One hat über Tangent keine Dynamik → Struktur" },
+    "Saturation":           { "param": "0x2C",  "perTick": 1 },
+    "White Balance / Temp": { "param": "0x01",  "perTick": 20 },
+    "Tint":                 { "param": "0x03",  "perTick": 0.3 },
+    "D1":                   { "param": "0x2A",  "perTick": 0.5, "_hinweis": "Helligkeit" },
+    "D2":                   { "param": "0x37",  "perTick": 0.02, "_hinweis": "Vignettierung" },
+    "Control Dial (großes Rad)": { "plus": "0x8E", "minus": "0x8D", "_hinweis": "nächstes / voriges Bild" }
+  },
+  "buttons": {
+    "Undo":         { "keys": "cmd+z", "_hinweis": "Tangent hat kein Undo (0x77 getestet: wirkungslos) → Tastenkürzel" },
+    "Redo":         { "action": "0x78" },
+    "Copy":         { "action": "0xFC" },
+    "Paste":        { "action": "0xFD" },
+    "Before/After": { "action": "0x252" },
+    "Screen Mode":  { "action": "0xF7" },
+    "Pfeil links":  { "action": "0x8D" },
+    "Pfeil rechts": { "action": "0x8E" },
+    "Pfeil oben":   { "action": "0xC5", "_hinweis": "Zoom 100 %" },
+    "Pfeil unten":  { "action": "0xC4", "_hinweis": "Zoom einpassen" },
+    "Bewertungstaste 0 (falls vorhanden)": { "action": "0x106" },
+    "Bewertungstaste 1 (falls vorhanden)": { "action": "0x101" },
+    "Bewertungstaste 2 (falls vorhanden)": { "action": "0x102" },
+    "Bewertungstaste 3 (falls vorhanden)": { "action": "0x103" },
+    "Bewertungstaste 4 (falls vorhanden)": { "action": "0x104" },
+    "Bewertungstaste 5 (falls vorhanden)": { "action": "0x105" }
+  }
+}
