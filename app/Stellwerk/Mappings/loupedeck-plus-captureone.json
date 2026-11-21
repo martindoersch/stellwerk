@@ -52,7 +52,9 @@
   },
   "fnButtons": {
     "_hinweis": "Fn gedrückt halten + Taste",
-    "Undo":         { "action": "0x112", "_hinweis": "Anpassungen zurücksetzen (Martin)" }
+    "Undo":         { "action": "0x112", "_hinweis": "Anpassungen zurücksetzen (Martin)" },
+    "Export":       { "keys": "cmd+shift+e", "_hinweis": "⇧⌘E (Martin)" },
+    "Before/After": { "keys": "shift+y", "_hinweis": "⇧Y (Martin)" }
   },
   "buttons": {
     "Undo":         { "keys": "cmd+z", "_hinweis": "Tangent hat kein Undo (0x77 getestet: wirkungslos) → Tastenkürzel" },
@@ -65,7 +67,7 @@
     "Pfeil rechts": { "keys": "right" },
     "Pfeil oben":   { "keys": "up" },
     "Pfeil unten":  { "keys": "down" },
-    "Export":       { "keys": "cmd+d", "_hinweis": "Martins Vorgabe ⌘D, über das Menü" },
+    "Export":       { "keys": "cmd+e", "_hinweis": "⌘E (Martin)" },
     "P1":           { "action": "0x111", "_hinweis": "Auto" },
     "P2":           { "action": "0x112", "_hinweis": "Anpassungen zurücksetzen" },
     "P3":           { "action": "0xF9",  "_hinweis": "nach links drehen" },
