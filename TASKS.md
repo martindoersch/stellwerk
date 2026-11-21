@@ -73,4 +73,4 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 ## Werkverzeichnis
 
-- [ ] Eintrag in `INDEX.md` und `LOGBUCH.md` (am Session-Ende)
+- [x] Eintrag in `INDEX.md` und `LOGBUCH.md` (laufend nachtragen)
