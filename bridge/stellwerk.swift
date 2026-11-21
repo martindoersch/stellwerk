@@ -345,8 +345,28 @@ for (name, v) in binding["buttons"] as? [String: [String: Any]] ?? [:] {
     }
 }
 
+// Fein/Grob (wie Photoshop: Alt = fein, Shift = grob)
+let modCfg = binding["modifiers"] as? [String: Any] ?? [:]
+let fineFactor = modCfg["fine"] as? Double ?? 0.2
+let coarseFactor = modCfg["coarse"] as? Double ?? 4
+let keyboardModifiers = modCfg["keyboard"] as? Bool ?? true
+
+// Modus-Tasten: --/Clr wechselt Sterne ↔ Farben, Fn + --/Clr = Modifier-Modus
+enum KeyMode: String { case stars = "Sterne", colors = "Farben", modifiers = "Modifier (Shift/Ctrl/Cmd/Alt/Tab)" }
+let modeCfg = binding["modeKeys"] as? [String: Any] ?? [:]
+let modeToggle = modeCfg["toggle"] as? String
+let fnKey = modeCfg["fn"] as? String ?? "Fn"
+let modeKeys = modeCfg["keys"] as? [String] ?? []
+let starIDs = (modeCfg["stars"] as? [String] ?? []).compactMap(hexID)
+let colorIDs = (modeCfg["colors"] as? [String] ?? []).compactMap(hexID)
+let starsClear = (modeCfg["starsClear"] as? String).flatMap(hexID)
+let colorsClear = (modeCfg["colorsClear"] as? String).flatMap(hexID)
+var keyMode = KeyMode.stars
+var held = Set<String>()   // gerade gedrückte Loupedeck-Tasten
+
 // IDs gegen controls.xml prüfen
 let buttonIDs = buttons.values.compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
+    + starIDs + colorIDs + [starsClear, colorsClear].compactMap { $0 }
 for id in Set(dials.values.flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } } + buttonIDs)
 where !catalog.isEmpty && catalog[id] == nil {
     print("⚠️  \(hexStr(id)) steht nicht in controls.xml (Test, ob Capture One es trotzdem kennt)")
@@ -388,10 +408,42 @@ func turn(_ name: String, ticks: Int) {
     let ms = (now - (lastTick[name] ?? 0)) * 1000
     lastTick[name] = now
     let factor = ms < accel.fastMs ? accel.fastFactor : ms < accel.mediumMs ? accel.mediumFactor : 1
-    hub.change(p, by: Float(Double(ticks) * b.perTick * factor))
+    hub.change(p, by: Float(Double(ticks) * b.perTick * factor * modifierFactor()))
 }
 
+/// Alt/⌥ = fein, Shift/⇧ = grob (fein gewinnt, wenn beides gehalten wird)
+func modifierFactor() -> Double {
+    let kb = keyboardModifiers ? CGEventSource.flagsState(.combinedSessionState) : []
+    let padMods = keyMode == .modifiers
+    if kb.contains(.maskAlternate) || (padMods && held.contains("Alt")) { return fineFactor }
+    if kb.contains(.maskShift) || (padMods && held.contains("Shift")) { return coarseFactor }
+    return 1
+}
+
+func release(_ name: String) { held.remove(name) }
+
+extension Array { subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil } }
+
 func press(_ name: String) {
+    held.insert(name)
+    if name == modeToggle {
+        keyMode = held.contains(fnKey) ? .modifiers : (keyMode == .stars ? .colors : .stars)
+        print("🔀 Modus: \(keyMode.rawValue)")
+        return
+    }
+    if let i = modeKeys.firstIndex(of: name) {
+        let fn = held.contains(fnKey)
+        switch keyMode {
+        case .stars:
+            if let a = fn ? starsClear : starIDs[safe: i] { print("→ \(name): \(c1Name(a))"); hub.action(a) }
+        case .colors:
+            if let a = fn ? colorsClear : colorIDs[safe: i] { print("→ \(name): \(c1Name(a))"); hub.action(a) }
+        case .modifiers:
+            if name == "Alt" { print("   Alt gehalten: fein") } else if name == "Shift" { print("   Shift gehalten: grob") }
+        }
+        return
+    }
+    if name == fnKey { return }   // Fn wirkt nur in Kombination
     if case .action(let a)? = buttons[name] {
         print("→ \(name): \(c1Name(a))"); hub.action(a)
     } else if case .keys(let k)? = buttons[name] {
@@ -423,6 +475,8 @@ MIDIInputPortCreateWithProtocol(client, "in" as CFString, ._1_0, &port) { list, 
                     if let name = dialByCC[d1] { turn(name, ticks: ticks) } else { print("   CC \(d1): nicht angelernt") }
                 case 0x90 where d2 > 0:
                     if let name = nameByNote[d1] { press(name) } else { print("   Note \(d1): nicht angelernt") }
+                case 0x80, 0x90:   // NoteOff bzw. NoteOn mit Velocity 0 = losgelassen
+                    if let name = nameByNote[d1] { release(name) }
                 default: break
                 }
             }
@@ -469,8 +523,9 @@ Thread {
                 turn(name, ticks: ticks)
             case "b" where parts.count >= 2:
                 let q = parts.dropFirst().joined(separator: " ")
-                guard let name = findName(q, in: Array(buttons.keys) + Array(dials.keys)) else { print("? Taste \(q) unbekannt/mehrdeutig"); return }
-                press(name)
+                let all = Array(buttons.keys) + Array(dials.keys) + modeKeys + [modeToggle, fnKey].compactMap { $0 }
+                guard let name = findName(q, in: all) else { print("? Taste \(q) unbekannt/mehrdeutig"); return }
+                press(name); release(name)
             case "p" where parts.count == 3:
                 if let id = hexID(parts[1]), let d = Float(parts[2]) { hub.change(id, by: d) } else { print("? p <id> <delta>") }
             case "r" where parts.count == 2:
