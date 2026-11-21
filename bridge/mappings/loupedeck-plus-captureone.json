@@ -20,7 +20,7 @@
   },
   "buttons": {
     "Undo":         { "keys": "cmd+z", "_hinweis": "Tangent hat kein Undo (0x77 getestet: wirkungslos) → Tastenkürzel" },
-    "Redo":         { "action": "0x78" },
+    "Redo":         { "keys": "cmd+shift+z", "_hinweis": "Tangent-Redo 0x78 getestet: wirkungslos → Menü/Tastenkürzel" },
     "Copy":         { "action": "0xFC" },
     "Paste":        { "action": "0xFD" },
     "Before/After": { "action": "0x252" },

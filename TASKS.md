@@ -20,7 +20,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] `controls.xml` komplett ausgewertet: `bridge/parse_controls.py` erzeugt `docs/capture-one-controls.md` (Tabelle) und `bridge/mappings/capture-one-controls.json`. **63 Regler, 429 Aktionen, 34 Gruppen.** Nach Capture-One-Updates neu laufen lassen und per `git diff` prüfen
 - [x] **Undo fehlt** in `controls.xml` (Redo `0x78` ist da). `ActionOn 0x77` getestet: wirkungslos → Bridge schickt ⌘Z als Tastenkürzel direkt an Capture One (layout-sicher, deutsch Z/Y)
 - [x] ⌘Z über die Bridge in Capture One getestet ✅ (2026-11-21). `postToPid` landete im Terminal (Warnton) → jetzt Menüeintrag mit passendem Kürzel per Bedienungshilfen-API klicken (sprachunabhängig); Capture One muss dafür **vorne** sein, die Bridge holt es kurz nach vorne. Tastendruck nur noch als Notlösung
-- [ ] Redo `0x78` testen
+- [x] Redo: Tangent `0x78` wirkungslos (wie Undo `0x77`) → ebenfalls Menü/Tastenkürzel ⇧⌘Z, funktioniert ✅
 - [ ] Doppelte Aktionen klären: z. B. Copy Adjustments `0xFC` (Adjustments) und `0x16C` (Cursor Tools), Rotate Left `0xF9` und `0x158`. Welche macht was?
 - [ ] Modi: Capture One meldet nur **einen** Modus („Default", `0x00010001`). Modi pro Werkzeug muss also die Bridge selbst verwalten (Ebenen im Mapping), nicht Capture One. Kurz testen, ob `ModeChange` trotzdem etwas bewirkt
 - [ ] Verhalten klären: Welcher Wert gilt bei mehreren ausgewählten Bildern? Was passiert ohne geöffnetes Bild?
