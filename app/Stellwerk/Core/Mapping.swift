@@ -13,6 +13,12 @@ func hexStr(_ id: UInt32) -> String { String(format: "0x%X", id) }
 
 extension Array { subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil } }
 
+/// Einträge eines Abschnitts; Hinweistexte wie "_hinweis" (keine Objekte) werden übersprungen.
+/// (Ein strenger Cast auf [String: [String: Any]] verwarf sonst den ganzen Abschnitt.)
+func entries(_ v: Any?) -> [String: [String: Any]] {
+    (v as? [String: Any] ?? [:]).compactMapValues { $0 as? [String: Any] }
+}
+
 // MARK: - Dateien
 
 /// Belegungen liegen im App-Bundle (Vorgabe) und können im Benutzerordner überschrieben werden:
@@ -94,7 +100,7 @@ struct DeviceProfile {
 
     init(json: [String: Any]) {
         device = json["device"] as? String ?? device
-        let controls = json["controls"] as? [String: [String: Any]] ?? [:]
+        let controls = entries(json["controls"])
         // Drücken eines Drehreglers sendet die Note mit seiner CC-Nummer; echte Tasten haben Vorrang
         for (name, c) in controls { if let cc = c["cc"] as? Int { dialByCC[cc] = name; nameByNote[cc] = name } }
         for (name, c) in controls { if let note = c["note"] as? Int { nameByNote[note] = name } }
@@ -227,7 +233,7 @@ struct Mapping {
             accel = Accel(fastMs: a["fastMs"] ?? 20, fastFactor: a["fastFactor"] ?? 4,
                           mediumMs: a["mediumMs"] ?? 45, mediumFactor: a["mediumFactor"] ?? 2)
         }
-        dials = dialsFrom(json["dials"] as? [String: [String: Any]] ?? [:])
+        dials = dialsFrom(entries(json["dials"]))
         func buttonsFrom(_ raw: [String: [String: Any]]) -> [String: ButtonBinding] {
             var out: [String: ButtonBinding] = [:]
             for (name, v) in raw {
@@ -239,8 +245,8 @@ struct Mapping {
             }
             return out
         }
-        buttons = buttonsFrom(json["buttons"] as? [String: [String: Any]] ?? [:])
-        fnButtons = buttonsFrom(json["fnButtons"] as? [String: [String: Any]] ?? [:])
+        buttons = buttonsFrom(entries(json["buttons"]))
+        fnButtons = buttonsFrom(entries(json["fnButtons"]))
 
         let mod = json["modifiers"] as? [String: Any] ?? [:]
         fineFactor = mod["fine"] as? Double ?? fineFactor
@@ -259,7 +265,7 @@ struct Mapping {
         let bw = json["bwLayer"] as? [String: Any] ?? [:]
         bwToggle = bw["toggle"] as? String
         bwAction = (bw["action"] as? String).flatMap(hexID)
-        bwDials = dialsFrom(bw["dials"] as? [String: [String: Any]] ?? [:])
+        bwDials = dialsFrom(entries(bw["dials"]))
 
         // IDs gegen controls.xml prüfen
         guard !catalog.items.isEmpty else { return }
