@@ -24,7 +24,7 @@ let items: [Item] =
      ["L1", "L2", "L3"] + (1...6).map { "C\($0)" } +
      ["Undo", "Redo", "Copy", "Paste", "Before/After", "Export", "Screen Mode", "Custom Mode",
       "--/Clr (Sterne/Farben)"] +
-     (0...5).map { "Bewertungstaste \($0) (falls vorhanden)" } +
+     ["Shift", "Ctrl", "Cmd", "Alt", "Tab"] +
      ["Pfeil links", "Pfeil rechts", "Pfeil oben", "Pfeil unten", "Fn"])
         .map { Item(name: $0, kind: .button) }
 

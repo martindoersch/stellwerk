@@ -28,12 +28,6 @@
     "Pfeil links":  { "action": "0x8D" },
     "Pfeil rechts": { "action": "0x8E" },
     "Pfeil oben":   { "action": "0xC5", "_hinweis": "Zoom 100 %" },
-    "Pfeil unten":  { "action": "0xC4", "_hinweis": "Zoom einpassen" },
-    "Bewertungstaste 0 (falls vorhanden)": { "action": "0x106" },
-    "Bewertungstaste 1 (falls vorhanden)": { "action": "0x101" },
-    "Bewertungstaste 2 (falls vorhanden)": { "action": "0x102" },
-    "Bewertungstaste 3 (falls vorhanden)": { "action": "0x103" },
-    "Bewertungstaste 4 (falls vorhanden)": { "action": "0x104" },
-    "Bewertungstaste 5 (falls vorhanden)": { "action": "0x105" }
+    "Pfeil unten":  { "action": "0xC4", "_hinweis": "Zoom einpassen" }
   }
 }

@@ -1,0 +1,315 @@
+{
+  "controls": {
+    "--/Clr (Sterne/Farben)": {
+      "channel": 1,
+      "kind": "button",
+      "note": 65
+    },
+    "Alt": {
+      "channel": 1,
+      "kind": "button",
+      "note": 69
+    },
+    "Before/After": {
+      "channel": 1,
+      "kind": "button",
+      "note": 102
+    },
+    "Blacks": {
+      "cc": 34,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "C1": {
+      "channel": 1,
+      "kind": "button",
+      "note": 49
+    },
+    "C2": {
+      "channel": 1,
+      "kind": "button",
+      "note": 50
+    },
+    "C3": {
+      "channel": 1,
+      "kind": "button",
+      "note": 51
+    },
+    "C4": {
+      "channel": 1,
+      "kind": "button",
+      "note": 52
+    },
+    "C5": {
+      "channel": 1,
+      "kind": "button",
+      "note": 53
+    },
+    "C6": {
+      "channel": 1,
+      "kind": "button",
+      "note": 54
+    },
+    "Clarity": {
+      "cc": 45,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Clr/BW": {
+      "channel": 1,
+      "kind": "button",
+      "note": 101
+    },
+    "Cmd": {
+      "channel": 1,
+      "kind": "button",
+      "note": 68
+    },
+    "Contrast": {
+      "cc": 46,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Control Dial (großes Rad)": {
+      "cc": 48,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Copy": {
+      "channel": 1,
+      "kind": "button",
+      "note": 92
+    },
+    "Ctrl": {
+      "channel": 1,
+      "kind": "button",
+      "note": 67
+    },
+    "Custom Mode": {
+      "channel": 1,
+      "kind": "button",
+      "note": 117
+    },
+    "D1": {
+      "cc": 41,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "D2": {
+      "cc": 42,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Export": {
+      "channel": 1,
+      "kind": "button",
+      "note": 88
+    },
+    "Exposure": {
+      "cc": 33,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 1 (Rot)": {
+      "cc": 1,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 2 (Orange)": {
+      "cc": 2,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 3 (Gelb)": {
+      "cc": 3,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 4 (Grün)": {
+      "cc": 4,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 5 (Aqua)": {
+      "cc": 5,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 6 (Blau)": {
+      "cc": 6,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 7 (Lila)": {
+      "cc": 7,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Farbregler 8 (Magenta)": {
+      "cc": 8,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Fn": {
+      "channel": 1,
+      "kind": "button",
+      "note": 110
+    },
+    "Highlights": {
+      "cc": 40,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Hue": {
+      "channel": 1,
+      "kind": "button",
+      "note": 98
+    },
+    "L1": {
+      "channel": 1,
+      "kind": "button",
+      "note": 114
+    },
+    "L2": {
+      "channel": 1,
+      "kind": "button",
+      "note": 115
+    },
+    "L3": {
+      "channel": 1,
+      "kind": "button",
+      "note": 116
+    },
+    "Lum": {
+      "channel": 1,
+      "kind": "button",
+      "note": 100
+    },
+    "P1": {
+      "channel": 1,
+      "kind": "button",
+      "note": 80
+    },
+    "P2": {
+      "channel": 1,
+      "kind": "button",
+      "note": 81
+    },
+    "P3": {
+      "channel": 1,
+      "kind": "button",
+      "note": 82
+    },
+    "P4": {
+      "channel": 1,
+      "kind": "button",
+      "note": 83
+    },
+    "P5": {
+      "channel": 1,
+      "kind": "button",
+      "note": 84
+    },
+    "P6": {
+      "channel": 1,
+      "kind": "button",
+      "note": 85
+    },
+    "P7": {
+      "channel": 1,
+      "kind": "button",
+      "note": 86
+    },
+    "P8": {
+      "channel": 1,
+      "kind": "button",
+      "note": 87
+    },
+    "Paste": {
+      "channel": 1,
+      "kind": "button",
+      "note": 93
+    },
+    "Pfeil links": {
+      "channel": 1,
+      "kind": "button",
+      "note": 78
+    },
+    "Pfeil oben": {
+      "channel": 1,
+      "kind": "button",
+      "note": 76
+    },
+    "Pfeil rechts": {
+      "channel": 1,
+      "kind": "button",
+      "note": 79
+    },
+    "Pfeil unten": {
+      "channel": 1,
+      "kind": "button",
+      "note": 77
+    },
+    "Redo": {
+      "channel": 1,
+      "kind": "button",
+      "note": 96
+    },
+    "Sat": {
+      "channel": 1,
+      "kind": "button",
+      "note": 99
+    },
+    "Saturation": {
+      "cc": 36,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Screen Mode": {
+      "channel": 1,
+      "kind": "button",
+      "note": 97
+    },
+    "Shadows": {
+      "cc": 44,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Shift": {
+      "channel": 1,
+      "kind": "button",
+      "note": 66
+    },
+    "Tab": {
+      "channel": 1,
+      "kind": "button",
+      "note": 70
+    },
+    "Tint": {
+      "cc": 39,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Undo": {
+      "channel": 1,
+      "kind": "button",
+      "note": 95
+    },
+    "Vibrance": {
+      "cc": 37,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "White Balance / Temp": {
+      "cc": 38,
+      "channel": 1,
+      "kind": "dial"
+    },
+    "Whites": {
+      "cc": 35,
+      "channel": 1,
+      "kind": "dial"
+    }
+  },
+  "device": "Loupedeck+"
+}
