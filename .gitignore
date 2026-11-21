@@ -1,0 +1,9 @@
+# Hersteller-Installer und Handbücher (groß, urheberrechtlich geschützt)
+Resources/
+
+.DS_Store
+__pycache__/
+*.pyc
+.build/
+xcuserdata/
+DerivedData/
