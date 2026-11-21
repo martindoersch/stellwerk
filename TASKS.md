@@ -57,7 +57,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Phase 4 — Menüleisten-App (Swift)
 
 - [x] **Version 0.1** (2026-11-21): Xcode-Projekt `app/`, Prototyp portiert (MIDI, Tangent-Hub, Menü-Kürzel, Modus-Tasten, SW-Ebene, Modifier + Event-Tap, Fein/Grob, Beschleunigung). Statusmenü: Verbindungen, Bedienungshilfen, Modus, Belichtung, letzte Aktion, Belegung neu laden, Ordner, Autostart. Baut ohne Warnungen
-- [ ] **Martin:** v0.1 testen (Xcode ⌘R; Bedienungshilfen für „Stellwerk" freigeben; Prototyp vorher beenden, sonst ist Port 64246 belegt)
+- [x] v0.1 von Martin getestet ✅ (2026-11-21): läuft mit Loupedeck+ und Capture One
 - [ ] Belegungsdateien: `app/Stellwerk/Mappings/` ist jetzt die Hauptquelle; `bridge/mappings/` nur noch für den Prototyp
 
 - [ ] Kern nach `ARCHITEKTUR.md`: Control-Ereignis, Aktions-Vokabular, Mapping-Format, Feedback-Bus, aktive App erkennen
