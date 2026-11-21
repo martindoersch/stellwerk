@@ -2,7 +2,7 @@
 
 > Bis 2026-11-21 „Hardware Controller“. Name nach dem Bahn-Stellwerk: viele Hebel stellen viele Weichen, zentral verschaltet.
 
-Eigene Bridge, damit Martins Hardware-Controller Foto-Apps **über deren native Schnittstellen** steuern, egal welche Hardware an welcher App hängt. Stand und offene Punkte: `TASKS.md` · Aufbau: **`ARCHITEKTUR.md`** · Git: privates Repo github.com/martindoersch/stellwerk (`Resources/` ist ausgeschlossen).
+Eigene Bridge, damit Martins Hardware-Controller Foto-Apps **über deren native Schnittstellen** steuern, egal welche Hardware an welcher App hängt. Stand und offene Punkte: `TASKS.md` · Aufbau: **`ARCHITEKTUR.md`** · Git: privates Repo github.com/martindoersch/stellwerk.
 
 ## Ziel
 
@@ -66,7 +66,6 @@ Ergebnis: **Fertige Lösung gibt es keine.** Einen Ersatz-Hub, der MIDI- oder To
 
 | Pfad | Inhalt |
 |---|---|
-| `Resources/` | Installer und PDF-Handbücher (Loupedeck, Tangent, TourBox) |
 | `bridge/midi_monitor.swift` | MIDI-Mitschreiber (`swift midi_monitor.swift [Gerät]`) |
 | `bridge/learn_loupedeck.swift` | Geführtes Anlernen des Loupedeck+ mit Sprachansage → `bridge/mappings/loupedeck-plus.json` |
 | `ARCHITEKTUR.md` | Schichten, Datenmodell, Erweiterbarkeit |
@@ -81,5 +80,5 @@ Ergebnis: **Fertige Lösung gibt es keine.** Einen Ersatz-Hub, der MIDI- oder To
 
 - **Prototyp in Python** (keine Abhängigkeiten), danach **Menüleisten-App in Swift** (CoreMIDI und Network-Framework sind eingebaut, passt zu Xcode)
 - **Universeller Aufbau** (2026-11-21): Kern kennt nur normierte Ereignisse und semantische Aktionen; Adapter eingebaut (Swift) oder extern über lokales WebSocket-JSON-Protokoll; Rückkanal für Werte von Anfang an
-- Versionierung: privates GitHub-Repo, `Resources/` (Hersteller-Installer, 500 MB) nicht im Repo
+- Versionierung: privates GitHub-Repo. Hersteller-Installer und -Handbücher nicht ablegen (am 2026-11-21 aufgeräumt; bei Bedarf neu von den Herstellern laden)
 - Startkombination: **Loupedeck+ → Capture One**, danach TourBox nativ, danach Lightroom

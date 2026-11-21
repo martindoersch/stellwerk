@@ -49,6 +49,10 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 ## Phase 3 — TourBox Elite Plus nativ
 
+- [x] **USB-Kabel funktioniert nativ** (2026-11-21): serielles Gerät, Unlock + Konfiguration aus tuxbox, ein Byte pro Ereignis → `docs/tourbox-protokoll.md`, Mitschreiber `bridge/tourbox_monitor.swift`. Die TourBox Console muss dafür nicht laufen
+- [x] Codes bestätigt: Namen, Drehrichtung (0x40 = rechts/rauf), Steuerkreuz
+- [x] Eingang `TourBoxInput` in der App, Geräte-/Belegungsdateien pro Gerät, Einstellungen pro Gerät (Side = Kombi-Taste, `fnDials`)
+- [x] In der App mit echter TourBox getestet (Verbindung, Vorgabe-Belegung, Side-Kombis) – „passt perfekt"
 - [ ] BLE-Protokoll anhand des Community-Gists (AndyCappDev, „TourBox Elite BLE Protocol") prüfen
 - [ ] Verbindung über CoreBluetooth testen, inklusive Unlock-Sequenz; Konflikt mit TourBox Console klären (muss die App beendet sein?)
 - [ ] Haptik/Feedback der Elite nutzen, falls das Protokoll es hergibt
@@ -95,7 +99,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Hilfsmittel (Vorschläge aus der Recherche, 2026-11-21)
 
 - [ ] **Martin:** Tangent Developer Support Pack holen (Registrierung auf tangentwave.co.uk). Das ist die offizielle TIPC-Spezifikation statt Nachbau aus dem Hammerspoon-Code
-- [ ] Installer in `Resources/` mit `pkgutil --expand` auspacken, **nicht installieren** (Port 64246!): Loupedeck enthält vermutlich die AppleScript-Anbindung an Capture One und die Belegung des Loupedeck+ als Vorlage für Phase 2; der Tangent Hub vermutlich die Standard-Maps für Capture One und eventuell SDK-Teile
+- [~] ~~Installer in `Resources/` mit `pkgutil --expand` auspacken~~ – entfällt (2026-11-21): Loupedeck und TourBox laufen nativ, Installer gelöscht., **nicht installieren** (Port 64246!): Loupedeck enthält vermutlich die AppleScript-Anbindung an Capture One und die Belegung des Loupedeck+ als Vorlage für Phase 2; der Tangent Hub vermutlich die Standard-Maps für Capture One und eventuell SDK-Teile
 - [ ] MIDI mitschneiden mit der kostenlosen App *MIDI Monitor* (snoize) oder einem eigenen Skript
 - [ ] TourBox: BLE-Verkehr von TourBox Console mit Apples **PacketLogger** („Additional Tools for Xcode") mitschneiden, um den Linux-Gist auf dem Mac zu prüfen
 - [ ] Eigene Test-Session in Capture One anlegen, damit Schreibversuche keine echten Bearbeitungen verändern; Capture-One-Einstellungen vorher sichern
