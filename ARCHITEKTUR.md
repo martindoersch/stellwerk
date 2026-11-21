@@ -1,4 +1,4 @@
-# Architektur — universeller Controller-Bridge
+# Architektur — Stellwerk (universelle Controller-Bridge)
 
 Stand: 2026-11-21 · Leitidee: **Jede Eingabe steuert jede App.** Hardware, Software-Oberflächen und Apps sind austauschbare Bausteine.
 

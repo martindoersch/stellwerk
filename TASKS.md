@@ -1,11 +1,11 @@
-# Tasks — Hardware Controller
+# Tasks — Stellwerk
 
 Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 ## Erledigt
 
 - [x] Universelle Architektur festgehalten (`ARCHITEKTUR.md`): Eingabe-Adapter inkl. Software-Surface, semantische Aktionen, Mapping, Feedback, externe Adapter
-- [x] Privates Git-Repo angelegt (github.com/martindoersch/hardware-controller)
+- [x] Privates Git-Repo angelegt (github.com/martindoersch/stellwerk)
 
 - [x] Resources gesichtet (Loupedeck-, Tangent-Installer, PDFs; TourBox-Datei war die Android-`.apk`, die Mac-App ist schon installiert)
 - [x] Schnittstellen analysiert: Capture One über Tangent (TIPC), Lightroom über Lua-SDK, Photomator nur Tastenkürzel

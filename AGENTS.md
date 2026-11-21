@@ -1,6 +1,8 @@
-# Hardware Controller — Projektbeschreibung
+# Stellwerk — Projektbeschreibung
 
-Eigene Bridge, damit Martins Hardware-Controller Foto-Apps **über deren native Schnittstellen** steuern, egal welche Hardware an welcher App hängt. Stand und offene Punkte: `TASKS.md` · Aufbau: **`ARCHITEKTUR.md`** · Git: privates Repo github.com/martindoersch/hardware-controller (`Resources/` ist ausgeschlossen).
+> Bis 2026-11-21 „Hardware Controller“. Name nach dem Bahn-Stellwerk: viele Hebel stellen viele Weichen, zentral verschaltet.
+
+Eigene Bridge, damit Martins Hardware-Controller Foto-Apps **über deren native Schnittstellen** steuern, egal welche Hardware an welcher App hängt. Stand und offene Punkte: `TASKS.md` · Aufbau: **`ARCHITEKTUR.md`** · Git: privates Repo github.com/martindoersch/stellwerk (`Resources/` ist ausgeschlossen).
 
 ## Ziel
 
