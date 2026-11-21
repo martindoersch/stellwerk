@@ -64,7 +64,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] Neu verbinden ohne Neustart geprüft (2026-11-21): **geht nicht.** Capture One verbindet nicht von selbst (20 s gewartet), reagiert nicht auf `defaults write` des Tangent-Schalters, und der Schalter in den Einstellungen verlangt selbst einen Neustart. Kein Tangent im AppleScript-Wörterbuch → Neustart ist der einzige Weg
 - [x] Sicherheit: Hub lauschte auf allen Schnittstellen (`*:64246`, also im WLAN erreichbar), obwohl `requiredInterfaceType = .loopback` gesetzt war → jetzt fest an `127.0.0.1` gebunden (App und Prototyp)
 - [x] Martins Wünsche (2026-11-21): **Fn + Undo = Zurücksetzen** (neuer Abschnitt `fnButtons` in der Belegung, in den Einstellungen angezeigt), **C1 = Enter, C2 = Esc**. Tasten ohne Menüeintrag gehen jetzt als echter Tastendruck an die vorderste App (Capture One wird vorher nach vorne geholt). Zuschneiden/Ausrichten sind damit von C1/C2 weg
-- [x] Bug: Fn + Undo kam als Undo an. Mitschnitt zeigte korrektes MIDI; Ursache: `"_hinweis"`-Text im Abschnitt `fnButtons` ließ den strengen JSON-Cast scheitern → ganzer Abschnitt verworfen. Jetzt werden Hinweistexte in allen Abschnitten übersprungen (`entries()`)
+- [x] Bug (behoben, von Martin bestätigt ✅): Fn + Undo kam als Undo an. Mitschnitt zeigte korrektes MIDI; Ursache: `"_hinweis"`-Text im Abschnitt `fnButtons` ließ den strengen JSON-Cast scheitern → ganzer Abschnitt verworfen. Jetzt werden Hinweistexte in allen Abschnitten übersprungen (`entries()`)
 - [ ] Fn-Ebene in den Einstellungen belegbar machen
 - [ ] Knopf „Capture One neu starten" im Menü, wenn Capture One läuft, aber nicht verbunden ist
 - [ ] **Martin:** v0.3 testen
