@@ -78,8 +78,8 @@
     "C2":           { "keys": "esc", "_hinweis": "Esc (Martin), abbrechen" },
     "C3":           { "action": "0x15B", "_hinweis": "Weißabgleich-Pipette" },
     "C4":           { "action": "0x176", "_hinweis": "Maske malen" },
-    "C5":           { "action": "0x253", "_hinweis": "Reparieren (Heal)" },
-    "C6":           { "action": "0x14F", "_hinweis": "Auswahl-Werkzeug" },
+    "C5":           { "keys": "cmd+shift+d", "_hinweis": "⇧⌘D (Martin)" },
+    "C6":           { "keys": "cmd+d", "_hinweis": "⌘D (Martin)" },
     "L1":           { "action": "0x21D", "_hinweis": "neue leere Ebene" },
     "L2":           { "action": "0x21B", "_hinweis": "nächste Ebene (nach oben)" },
     "L3":           { "action": "0x243", "_hinweis": "Ebene ein/aus" }
