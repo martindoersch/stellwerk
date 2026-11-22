@@ -793,6 +793,16 @@
         }
       }
     },
+    "Kein Profil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Profile"
+          }
+        }
+      }
+    },
     "Klicken und Kürzel drücken" : {
       "localizations" : {
         "en" : {

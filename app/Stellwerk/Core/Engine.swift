@@ -150,7 +150,10 @@ final class Engine {
         let ws = NSWorkspace.shared.notificationCenter
         for n in [NSWorkspace.didLaunchApplicationNotification, NSWorkspace.didTerminateApplicationNotification] {
             ws.addObserver(forName: n, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateCaptureOneRunning() }
+                MainActor.assumeIsolated {
+                    self?.updateCaptureOneRunning()
+                    self?.updateActiveProfile(announce: false)   // „Capture One" ↔ „Kein Profil"
+                }
             }
         }
         updateActiveProfile(announce: false)
@@ -367,11 +370,16 @@ final class Engine {
     /// Anzeige des aktiven Profils; Stellwerk selbst (Einstellungen, Menü) ändert es nicht
     private func updateActiveProfile(announce show: Bool) {
         if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier { return }
-        let name = frontProfileID.flatMap { appProfile($0)?.name } ?? "Capture One"
+        // Ohne eigenes Profil gilt die Capture-One-Belegung – läuft Capture One nicht, wäre „Capture One" irreführend.
+        // Laufend hier nachsehen statt captureOneRunning: beim Beenden kommt die Aktivierung evtl. vor dem Beenden-Signal.
+        let captureOne = settings.targetMode != .frontmost
+            || !NSRunningApplication.runningApplications(withBundleIdentifier: Self.captureOneBundleID).isEmpty
+        let profile = frontProfileID.flatMap { appProfile($0)?.name }
+        let name = profile ?? (captureOne ? "Capture One" : String(localized: "Kein Profil"))
         guard name != activeProfileName else { return }
         activeProfileName = name
         if show && settings.targetMode == .frontmost {
-            announce(name, symbol: "app.badge")
+            announce(name, symbol: profile == nil && !captureOne ? "app.dashed" : "app.badge")
             // Auch auf dem Quick-Keys-Display kurz einblenden (nur beim Profilwechsel, sonst stört es – getestet)
             // Kurz warten: beim Programmwechsel schreibt womöglich der Xencelabs-Treiber dazwischen
             if settings.showHUD {

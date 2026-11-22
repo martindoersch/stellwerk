@@ -29,6 +29,7 @@ Software surface┘                                    └─ Photomator (on hol
 | `app/Stellwerk/Localizable.xcstrings` | UI strings. **Source language is German** (keys are German text), English translations alongside |
 | `app/Stellwerk/Controls.xcstrings` | Display names for device control names (the names themselves are keys in JSON and must not change) |
 | `app/Stellwerk/Stellwerk.icon` | App icon (Icon Composer), ⌥ glyph on lime |
+| `lightroom/` | Lightroom Classic plugin `Stellwerk.lrplugin` (Lua) + `install.sh` (copies it into LrC's Modules folder) |
 | `bridge/` | Prototypes and test tools (Swift scripts, Python stdlib only). `bridge/mappings/` is only for the prototype |
 | `bridge/fake_loupedeck.swift` | Virtual MIDI device "Loupedeck Test": test Stellwerk without hardware |
 | `bridge/fake_captureone.py` | Test client that pretends to be Capture One |
@@ -86,8 +87,12 @@ Software surface┘                                    └─ Photomator (on hol
 - Buttons send shortcuts; where a menu item exists, Stellwerk clicks it via Accessibility (works regardless of keyboard layout). The target app is brought to front first.
 - Loupedeck modifier buttons are held as real modifiers; an **event tap** adds them to real mouse/keyboard events (posted modifier events alone don't affect real clicks).
 
-### Lightroom Classic (planned)
-- Official route: `.lrplugin` with `LrDevelopController` + `LrSocket` (local TCP to the bridge). Check **tangent-lightroom** (crazyscot, GitHub) first: it might make LR a Tangent client too. MIDI2LR is the mature open-source reference.
+### Lightroom Classic (in progress): own plugin `lightroom/Stellwerk.lrplugin`, verified
+- LrC plugins can only listen, not connect: the plugin binds two `LrSocket`s (receive/send) on system-assigned ports and writes `receive|send|instance` to `~/Library/Application Support/Stellwerk/lightroom-ports`; Stellwerk connects to both. Line protocol (`change <param> <delta>`, `reset`, `get`, `watch`, `do <action>` → `value <param> <v>`, `module`, `photo`) documented at the top of `Init.lua`. Fixed commands only, no script execution (unlike the Logi plugin's `runscript`).
+- **Install via `lightroom/install.sh`** (copies into `~/Library/Application Support/Adobe/Lightroom/Modules/`). Added from the repo via Plug-in Manager, LrC read only `Info.lua` and found no other script.
+- `setValue` costs ~50 ms (re-render) → Stellwerk must coalesce deltas per param and send at most every ~60 ms, otherwise LrC lags seconds behind.
+- `LrShutdownPlugin` must return `{ LrShutdownFunction = function(done) … done() end }`. "Reload plug-in" starts a second instance without stopping the first (handled via instance timestamp; once froze LrC → prefer restarting LrC after plugin changes). Reconnecting inside `onClosed` left the receive port dead → the main loop recreates both sockets.
+- Debug: trace in `/tmp/stellwerk-lightroom.log`, menu File › Plug-in Extras › Stellwerk-Status. Test client `bridge/lightroom_test.py`. Lua syntax check without a Lua install: `uv run --with lupa` (lupa.lua51). tangent-lightroom is archived (2022); Tangent's own LrC plugin exists (Hub 1.7+), protocol undocumented, not pursued.
 
 ### Photomator (on hold)
 - Checked 2026-11-22 on Photomator 3.4.15 (bundle ID `com.pixelmatorteam.pixelmator.touch.x.photo`): **no control interface.** AppleScript dictionary is only the generic Standard Suite (open/save/close/windows), no Shortcuts actions (no `Metadata.appintents` in the bundle), URL scheme `photomator://` with no apparent commands (likely just the "Add to Photomator" extension handoff), no Tangent/MIDI, keyboard shortcuts only for tools and not customizable.
