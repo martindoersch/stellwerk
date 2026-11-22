@@ -1,46 +1,46 @@
 {
-  "fill" : {
-    "linear-gradient" : [
+  "fill": {
+    "linear-gradient": [
       "display-p3:0.82439,0.84610,0.26853,1.00000",
       "display-p3:0.51122,0.52468,0.16652,1.00000"
     ]
   },
-  "groups" : [
+  "groups": [
     {
-      "layers" : [
+      "layers": [
         {
-          "fill-specializations" : [
+          "fill-specializations": [
             {
-              "value" : {
-                "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+              "value": {
+                "solid": "display-p3:0.11000,0.11000,0.12000,1.00000"
               }
             },
             {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "display-p3:0.82439,0.84610,0.26853,0.60836"
+              "appearance": "dark",
+              "value": {
+                "solid": "display-p3:0.82439,0.84610,0.26853,0.60836"
               }
             }
           ],
-          "glass" : true,
-          "image-name" : "dial.svg",
-          "name" : "dial"
+          "glass": true,
+          "image-name": "option.svg",
+          "name": "option"
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
       }
     }
   ],
-  "supported-platforms" : {
-    "circles" : [
+  "supported-platforms": {
+    "circles": [
       "watchOS"
     ],
-    "squares" : "shared"
+    "squares": "shared"
   }
 }

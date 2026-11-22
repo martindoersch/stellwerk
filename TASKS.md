@@ -5,13 +5,10 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Als Nächstes (Martin, 2026-11-21)
 
 - [ ] **Programmprofile ausbauen und im Alltag testen.** Grundlage steht: Modus „Im aktiven Programm“, Profile pro Gerät, Kürzel für Tasten und Drehregler, Menüeintrag neben jedem Kürzel. Zu klären: welche Programme zuerst (Photoshop? Premiere? Finder?), sinnvolle Vorgaben je Programm, ob Drehregler mehr als Kürzel brauchen (z. B. Scrollen, Pinselgröße)
-- [ ] **Icon: Weiche** (2026-11-22). Symbol = die Alt-/Option-Taste **⌥** (Unicode `U+2325`), sieht aus wie eine Weiche → passt zum Namen Stellwerk.
-  - **Menüleiste:** SF Symbol **`option`** (am Mac verfügbar, geprüft). In `app/Stellwerk/StellwerkApp.swift` das jetzige `dial.medium` / `dial.medium.fill` ersetzen. `option` hat keine `.fill`-Variante → Verbindungsstatus anders zeigen, z. B. getrennt = gedimmt (`.opacity(0.4)`) oder kleiner Punkt daneben. Als Template-Symbol lassen (passt sich hell/dunkel an)
-  - **App-Icon:** gibt es noch nicht, das Projekt hat kein `Assets.xcassets`. Anlegen, `AppIcon` mit dem ⌥-Glyph (SF Symbol `option` als Vorlage, kräftige Strichstärke) in Dunkel auf Markenfarbe **Lime `#C7D300`**, macOS-Rundquadrat. Alle Größen 16–1024 px
-  - Ausweichsymbol, falls ⌥ zu sehr nach „Taste" aussieht: SF Symbol **`arrow.triangle.branch`** (Abzweig, ebenfalls geprüft)
 
 ## Erledigt
 
+- [x] **Icon: Weiche ⌥** (2026-11-22). Menüleiste: SF Symbol `option` als Template, getrennt = 40 % Deckkraft (ins Bild gezeichnet, `.opacity` greift im Menüleisten-Label nicht verlässlich). App-Icon: im vorhandenen Icon-Composer-Bündel `app/Stellwerk/Stellwerk.icon` den Drehregler-Glyph durch `Assets/option.svg` ersetzt, dunkel auf Lime (Dunkelmodus: Lime-Glas). Ausweichsymbol bei Bedarf: `arrow.triangle.branch`
 - [x] Universelle Architektur festgehalten (`ARCHITEKTUR.md`): Eingabe-Adapter inkl. Software-Surface, semantische Aktionen, Mapping, Feedback, externe Adapter
 - [x] Privates Git-Repo angelegt (github.com/martindoersch/stellwerk)
 
