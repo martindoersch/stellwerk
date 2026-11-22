@@ -39,7 +39,7 @@ final class TourBoxInput {
         let f = open(path, O_RDWR | O_NOCTTY | O_NONBLOCK)
         guard f >= 0 else {
             if lastFailedPath != path {   // nur einmal melden, nicht alle 2 s
-                onLog?("TourBox: \(path) belegt – TourBox Console beenden? (\(String(cString: strerror(errno))))")
+                onLog?(String(localized: "TourBox: \(path) belegt – TourBox Console beenden? (\(String(cString: strerror(errno))))"))
                 lastFailedPath = path
             }
             return

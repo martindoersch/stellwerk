@@ -47,14 +47,14 @@ final class TangentHub {
         params.requiredLocalEndpoint = NWEndpoint.hostPort(host: "127.0.0.1", port: 64246)
         params.allowLocalEndpointReuse = true
         guard let l = try? NWListener(using: params) else {
-            state = .failed("Port 64246 nicht verfügbar"); return
+            state = .failed(String(localized: "Port 64246 nicht verfügbar")); return
         }
         // Alle Handler laufen auf der Main-Queue → MainActor
         l.stateUpdateHandler = { [weak self] st in
             MainActor.assumeIsolated {
                 switch st {
                 case .ready: self?.state = .listening
-                case .failed(let e): self?.state = .failed("Port 64246 belegt? (\(e.localizedDescription))")
+                case .failed(let e): self?.state = .failed(String(localized: "Port 64246 belegt? (\(e.localizedDescription))"))
                 default: break
                 }
             }
@@ -76,7 +76,7 @@ final class TangentHub {
                 guard let self else { return }
                 switch st {
                 case .failed, .cancelled:
-                    if self.conn === c { self.conn = nil; self.state = .listening; self.onLog?("Capture One getrennt") }
+                    if self.conn === c { self.conn = nil; self.state = .listening; self.onLog?(String(localized: "Capture One getrennt")) }
                 default: break
                 }
             }
@@ -115,7 +115,7 @@ final class TangentHub {
         case 0x85, 0x86:   // ModeValue, DisplayText: derzeit nicht genutzt
             break
         default:
-            onLog?("Tangent: unbekannter Befehl \(hexStr(cmd))")
+            onLog?(String(localized: "Tangent: unbekannter Befehl \(hexStr(cmd))"))
         }
     }
 

@@ -1,0 +1,174 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "--/Clr (Sterne/Farben)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "--/Clr (Stars/Colors)"
+          }
+        }
+      }
+    },
+    "Control Dial (großes Rad)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control Dial (large wheel)"
+          }
+        }
+      }
+    },
+    "Farbregler 1 (Rot)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 1 (Red)"
+          }
+        }
+      }
+    },
+    "Farbregler 2 (Orange)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 2 (Orange)"
+          }
+        }
+      }
+    },
+    "Farbregler 3 (Gelb)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 3 (Yellow)"
+          }
+        }
+      }
+    },
+    "Farbregler 4 (Grün)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 4 (Green)"
+          }
+        }
+      }
+    },
+    "Farbregler 5 (Aqua)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 5 (Aqua)"
+          }
+        }
+      }
+    },
+    "Farbregler 6 (Blau)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 6 (Blue)"
+          }
+        }
+      }
+    },
+    "Farbregler 7 (Lila)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 7 (Purple)"
+          }
+        }
+      }
+    },
+    "Farbregler 8 (Magenta)": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dial 8 (Magenta)"
+          }
+        }
+      }
+    },
+    "Pfeil links": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrow left"
+          }
+        }
+      }
+    },
+    "Pfeil oben": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrow up"
+          }
+        }
+      }
+    },
+    "Pfeil rechts": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrow right"
+          }
+        }
+      }
+    },
+    "Pfeil unten": {
+      "comment": "Name of a hardware control (from the device file)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrow down"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

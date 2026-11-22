@@ -28,9 +28,9 @@ final class KeyOutput {
     /// Undo & Co. wirken aufs aktive Fenster → App bei Bedarf kurz nach vorne holen,
     /// dann den Menüeintrag mit diesem Kürzel klicken (sprachunabhängig). Notlösung: Tastendruck.
     func send(_ k: KeyCombo, toBundleID bundleID: String) {
-        guard Accessibility.isTrusted else { onLog?("⚠️ Bedienungshilfen-Freigabe fehlt"); return }
+        guard Accessibility.isTrusted else { onLog?(String(localized: "⚠️ Bedienungshilfen-Freigabe fehlt")); return }
         guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first else {
-            onLog?("⚠️ \(bundleID) läuft nicht"); return
+            onLog?(String(localized: "⚠️ \(bundleID) läuft nicht")); return
         }
         if app.isActive {
             deliver(k, to: app)
@@ -44,20 +44,20 @@ final class KeyOutput {
 
     /// Kürzel ans vordere Programm (Programmprofile). Ohne Menüsuche = schneller, z. B. für Drehregler.
     func sendToFront(_ k: KeyCombo, viaMenu: Bool = true) {
-        guard Accessibility.isTrusted else { onLog?("⚠️ Bedienungshilfen-Freigabe fehlt"); return }
+        guard Accessibility.isTrusted else { onLog?(String(localized: "⚠️ Bedienungshilfen-Freigabe fehlt")); return }
         guard let app = NSWorkspace.shared.frontmostApplication else { return }
         deliver(k, to: app, viaMenu: viaMenu)
     }
 
     private func deliver(_ k: KeyCombo, to app: NSRunningApplication, viaMenu: Bool = true) {
         if viaMenu, let title = pressMenuItem(pid: app.processIdentifier, k) {
-            onLog?("Menü „\(title)\"")
+            onLog?(String(localized: "Menü „\(title)\""))
             return
         }
         // Kein Menüeintrag (z. B. Enter, Esc): als echter Tastendruck an die vorderste App,
         // die wir gerade nach vorne geholt haben. postToPid landete teils im Terminal.
-        if !k.flags.contains(.maskCommand) { onLog?("Taste \(prettyKeys(k.text))") }
-        else { onLog?("kein Menüeintrag für \(prettyKeys(k.text)) → Tastendruck") }
+        if !k.flags.contains(.maskCommand) { onLog?(String(localized: "Taste \(prettyKeys(k.text))")) }
+        else { onLog?(String(localized: "kein Menüeintrag für \(prettyKeys(k.text)) → Tastendruck")) }
         // Gehaltene Modifier (Mac-Tastatur oder Loupedeck im Tasten-Modus) wirken mit, z. B. Shift + Pfeil
         let live = CGEventSource.flagsState(.combinedSessionState)
             .intersection([.maskShift, .maskControl, .maskAlternate, .maskCommand])

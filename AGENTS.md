@@ -1,84 +1,102 @@
-# Stellwerk — Projektbeschreibung
+# Stellwerk — Guide for agents
 
-> Bis 2026-11-21 „Hardware Controller“. Name nach dem Bahn-Stellwerk: viele Hebel stellen viele Weichen, zentral verschaltet.
+> Read this first. It is the single source of project knowledge for coding agents (Claude Code reads it via `CLAUDE.md`). Roadmap and progress: `TASKS.md` · Design: `ARCHITECTURE.md` · User docs: `README.md`.
+> Reply in the language the user writes in. The original author works in German; `TASKS.md` and code comments are German.
 
-Eigene Bridge, damit Martins Hardware-Controller Foto-Apps **über deren native Schnittstellen** steuern, egal welche Hardware an welcher App hängt. Stand und offene Punkte: `TASKS.md` · Aufbau: **`ARCHITEKTUR.md`** · Git: privates Repo github.com/martindoersch/stellwerk.
+Stellwerk is a macOS menu bar app that lets hardware controllers drive photo apps **through their native interfaces**, independent of which device talks to which app. Named after the railway signal box: many levers, many switches, wired centrally.
 
-## Ziel
+## Goals
 
-1. Die nativen Schnittstellen der Apps nutzen (feine Regler, Wert-Rückmeldung), nicht nur Tastenkürzel.
-2. Die Hardware von der App entkoppeln: Jedes Gerät wird einmal angebunden, jede App einmal. Dann steuert jedes Gerät jede App.
-3. **Universal und erweiterbar**: Eingabe ist nicht nur Hardware, auch eine Software-Oberfläche (Maus, Touch, iPad im Browser) ist eine Quelle. Neue Geräte und Apps kommen als Adapter dazu, ohne den Kern umzubauen. Details in `ARCHITEKTUR.md`.
+1. Use the apps' native interfaces (fine dials, value feedback), not just keyboard shortcuts.
+2. Decouple hardware from apps: each device is connected once, each app once, then every device drives every app.
+3. **Universal and extensible**: input is not only hardware; a software surface (mouse, touch, iPad in a browser) is a source too. New devices and apps arrive as adapters without touching the core. See `ARCHITECTURE.md`.
 
 ```
-Hardware-Adapter        Bridge (Menüleisten-App)       App-Adapter
-Loupedeck+    ─┐                                    ┌─ Capture One  (Tangent-Protokoll, Bridge spielt Hub)
-TourBox Elite+ ─┼──►  einheitliche Aktionen  ──►    ├─ Lightroom Classic (eigenes Lua-Plugin, LR-SDK)
-MIDI allgemein ─┤
-Software-Surface ┘  (Touch/Maus, Web)     „Belichtung +0,05“            └─ Photomator (nur Tastenkürzel/Kurzbefehle)
+Input adapters          Bridge (menu bar app)          Output adapters
+Loupedeck+     ─┐                                    ┌─ Capture One  (Tangent protocol, Stellwerk acts as the hub)
+TourBox Elite+ ─┼──►  unified actions  ──►           ├─ Any frontmost app (shortcuts, menu items)
+MIDI general   ─┤    "Exposure +0.05"                ├─ Lightroom Classic (planned: Lua plugin, LR SDK)
+Software surface┘                                    └─ Photomator (planned: shortcuts only)
 ```
 
-## Hardware (vorhanden)
+## Repository layout
 
-| Gerät | Anbindung | Notiz |
+| Path | Content |
+|---|---|
+| `app/` | **Menu bar app**, Xcode project `Stellwerk.xcodeproj`, no sandbox. `Core/` (Engine, Mapping, UserSettings), `Input/` (MIDI, TourBox serial), `Output/` (Tangent hub, keys/menu items/event tap), `UI/` (status menu, settings, HUD) |
+| `app/Stellwerk/Mappings/` | Default device profiles and mappings (JSON, bundled). Users override them in `~/Library/Application Support/Stellwerk/Mappings/`; settings overlay in `…/Stellwerk/settings.json` |
+| `app/Stellwerk/Localizable.xcstrings` | UI strings. **Source language is German** (keys are German text), English translations alongside |
+| `app/Stellwerk/Controls.xcstrings` | Display names for device control names (the names themselves are keys in JSON and must not change) |
+| `app/Stellwerk/Stellwerk.icon` | App icon (Icon Composer), ⌥ glyph on lime |
+| `bridge/` | Prototypes and test tools (Swift scripts, Python stdlib only). `bridge/mappings/` is only for the prototype |
+| `bridge/fake_loupedeck.swift` | Virtual MIDI device "Loupedeck Test": test Stellwerk without hardware |
+| `bridge/fake_captureone.py` | Test client that pretends to be Capture One |
+| `bridge/midi_monitor.swift`, `bridge/tourbox_monitor.swift` | Raw data loggers for new hardware |
+| `bridge/learn_loupedeck.swift` | Guided learning of Loupedeck+ controls with voice prompts |
+| `bridge/parse_controls.py` | Parses Capture One's `controls.xml` → `docs/capture-one-controls.md` + JSON catalog. Re-run after Capture One updates and check `git diff` for changed IDs |
+| `docs/` | Capture One control list, TourBox USB protocol |
+
+## Build, run, test
+
+- Build with Xcode (`app/Stellwerk.xcodeproj`, scheme *Stellwerk*). Inside Xcode use the `BuildProject` tool; from a shell: `xcodebuild -project app/Stellwerk.xcodeproj -scheme Stellwerk build`. Keep the build free of warnings.
+- Contributors must set their own signing team and bundle ID; don't commit those changes back.
+- Without hardware: run the app, then `swift bridge/fake_loupedeck.swift`. For hub logic: `python3 bridge/fake_captureone.py`.
+- With hardware: the human tests on real devices. Ask for a short test and wait for the result before marking anything as verified.
+- **Capture One connects only at its own launch.** Stellwerk must run first (or use the in-app restart button).
+
+## Conventions
+
+- Swift, SwiftUI, Observation (`@Observable`), async/await; no Combine. 4-space indent. Comments in German are fine; match the surrounding file.
+- **Configuration is data**: devices and mappings are JSON, not code. JSON may contain `"_hinweis"` (note) keys; parsers must skip them (a strict cast once dropped a whole section).
+- **Localization**: every user-visible string is localizable with the German text as key. Add the English translation to `Localizable.xcstrings` in the same change. Use `String(localized:)` for strings built outside views; `Text(verbatim:)` for data that must not be translated.
+- Security: the Tangent hub binds to `127.0.0.1` only, never `*` (otherwise it is reachable over Wi-Fi).
+- Don't commit vendor installers, manuals, or vendor files copied from app bundles.
+- After a change: update `TASKS.md` (check off, add findings with date), record lasting knowledge here. Commit messages short, imperative, German or English.
+
+## Adding things
+
+- **New device:** write or reuse a monitor script, have the human press every control, document the codes (`docs/`), add a device profile + default mapping JSON in `app/Stellwerk/Mappings/`, an input in `Input/`, and display names in `Controls.xcstrings` if needed.
+- **New app:** prefer a native interface (Tangent, plugin SDK, AppleScript) over shortcuts. Record the findings below before coding.
+- **New UI language:** add it in Xcode (Project → Info → Localizations) and translate both string catalogs.
+
+## Hardware
+
+| Device | Connection | Notes |
 |---|---|---|
-| Loupedeck+ | USB, meldet sich als **MIDI-Gerät** | ältestes Loupedeck-Modell, kein Logi-SDK nötig |
-| TourBox Elite Plus | Bluetooth (BLE), gekoppelt als „Keyboard" | kein offizielles SDK; BLE-Protokoll von der Community entschlüsselt (braucht Unlock-Sequenz) |
-| Tangent Element | **nicht vorhanden** | Tangent Hub bewusst **nicht installieren**: Er würde Port 64246 belegen |
+| Loupedeck+ | USB, appears as **MIDI device** | Channel 1. Turning = relative CC (`01` = +1, `7F` = −1), pressing = note with the same number. CCs 33–48 + 1–8 (color dials). Top dials send ~3× more steps than color dials → step size per dial. No Logi software needed |
+| TourBox Elite Plus | **USB serial** (CDC), 115200 8N1 | Sends nothing until unlocked: `55 00 07 88 94 00 1A FE`, wait 300 ms, then a 94-byte config. One byte per event, bit 7 = release, bit 6 = direction. Details (German): `docs/tourbox-protokoll.md`. TourBox Console must be quit. BLE not done yet |
+| Tangent panels | not supported as input | Don't install the Tangent Hub: it occupies port 64246 |
 
-## Schnittstellen der Apps (Erkenntnisse)
+## App interfaces (findings)
 
-### Capture One: Tangent-Protokoll (TIPC) ✅ verifiziert 2026-11-21
-- Capture One verbindet sich als Client mit `127.0.0.1:64246` (dort lauscht normalerweise der Tangent Hub).
-- **Verbindet sich nur beim eigenen Start** und liest auch den Tangent-Schalter nur beim Start (getestet: kein Wiederverbinden, `defaults write` und Umschalten in den Einstellungen wirken erst nach Neustart). Hub fest an `127.0.0.1` binden, nicht `*`
-- **Unsere Bridge spielt den Hub.** Capture One meldet sich mit `ApplicationDefinition` an und beantwortet Wertabfragen.
-- Einstellung: `defaults write com.captureone.captureone16 TangentDeviceSupportEnableDefaultsKey -bool true` (in den Capture-One-Einstellungen sichtbar als Tangent-Unterstützung)
-- Regler-Liste: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml`, ausgewertet in **`docs/capture-one-controls.md`** (63 Regler, 429 Aktionen, nur ein Modus „Default")
-- Wichtigste IDs: Regler: Belichtung `0x26`, Kelvin `0x01`, Tint `0x03`, Kontrast `0x28`, Sättigung `0x2C`, Lichter `0x2E`, Schatten `0x30`, Weiß `0x250`, Schwarz `0x251`, Klarheit `0x32`, Struktur `0x33`. Aktionen: nächstes/voriges Bild `0x8E`/`0x8D`, Sterne 0–5 `0x106`, `0x101`–`0x105`, Farbmarkierung `0x107`–`0x10E`, Zurücksetzen `0x112`, Anpassungen kopieren/anwenden `0xFC`/`0xFD`, Vorher/Nachher `0x252`, Auto `0x111`, Zoom einpassen/100 % `0xC4`/`0xC5`. **Undo fehlt** (auch 0x77 wirkungslos) → Tastenkürzel ⌘Z
-- Im selben Ordner liegen Tangents Standardbelegungen (`element-*-map.xml`, `wave-map.xml`, `ripple-map.xml`): Vorlage dafür, welche Regler auf ein Panel gehören
-- Format: Big Endian, Nachricht = `uint32 Länge` + Body; Body = `uint32 Befehl` + Daten; Strings = `uint32 Länge` + Bytes
-- Wichtige Befehle Hub→App: `0x01` InitiateComms, `0x02` ParameterChange (id, float delta), `0x03` Reset, `0x04` ValueRequest, `0x08`/`0x0B` ActionOn/Off, `0x09` ModeChange
-- App→Hub: `0x81` ApplicationDefinition, `0x82` ParameterValue (id, float, bool default), `0x85` ModeValue, `0x86` DisplayText
-- Referenz: Hammerspoon `extensions/tangent/tangent.lua` (TIPC Rev 4); offizielles Developer Support Pack bei tangentwave.co.uk
+### Capture One: Tangent protocol (TIPC), verified
+- Capture One connects as a client to `127.0.0.1:64246` (normally the Tangent Hub). **Stellwerk plays the hub.** Capture One registers with `ApplicationDefinition` and answers value requests.
+- Connects **only at launch** and reads the Tangent switch only at launch; no reconnect, no AppleScript hook. Restart is the only way.
+- Enable: `defaults write com.captureone.captureone16 TangentDeviceSupportEnableDefaultsKey -bool true` (visible in Capture One settings).
+- Control list: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml` (63 parameters, 429 actions, one mode "Default"). Same folder has Tangent's default maps (`element-*-map.xml`, `wave-map.xml`, `ripple-map.xml`), useful as layout templates.
+- Key IDs: exposure `0x26`, Kelvin `0x01`, tint `0x03`, contrast `0x28`, saturation `0x2C`, highlights `0x2E`, shadows `0x30`, white `0x250`, black `0x251`, clarity `0x32`, structure `0x33`. Actions: next/prev image `0x8E`/`0x8D`, stars 0–5 `0x106`, `0x101`–`0x105`, color tags `0x107`–`0x10E`, reset `0x112`, copy/apply adjustments `0xFC`/`0xFD`, before/after `0x252`, auto `0x111`, zoom fit/100 % `0xC4`/`0xC5`.
+- **Undo/Redo (`0x77`/`0x78`) have no effect** → Stellwerk clicks the matching menu item via the Accessibility API (language-independent), keystroke as fallback. Paste `0xFD` opened a dialog and hung → menu ⇧⌘V.
+- Wire format: big endian, message = `uint32 length` + body; body = `uint32 command` + data; strings = `uint32 length` + bytes.
+- Hub→app: `0x01` InitiateComms, `0x02` ParameterChange (id, float delta), `0x03` Reset, `0x04` ValueRequest, `0x08`/`0x0B` ActionOn/Off, `0x09` ModeChange. App→hub: `0x81` ApplicationDefinition, `0x82` ParameterValue (id, float, bool default), `0x85` ModeValue, `0x86` DisplayText.
+- References: Hammerspoon `extensions/tangent/tangent.lua` (TIPC rev 4); official Developer Support Pack at tangentwave.co.uk.
 
-### Lightroom Classic: Lua-Plugin (LR-SDK)
-- Offizieller Weg: `.lrplugin` mit `LrDevelopController` (setzt jeden Entwicklungsregler) und `LrSocket` (lokale TCP-Verbindung zur Bridge)
-- Vorhandene Vorbilder in `~/Library/Application Support/Adobe/Lightroom/Modules/`: `logiplugin.lrplugin` (Loupedeck, lesbarer Lua-Code) und `Tourbox.lrplugin` (kompilierter Bytecode)
-- Open-Source-Referenz: MIDI2LR
+### Other apps (frontmost)
+- Buttons send shortcuts; where a menu item exists, Stellwerk clicks it via Accessibility (works regardless of keyboard layout). The target app is brought to front first.
+- Loupedeck modifier buttons are held as real modifiers; an **event tap** adds them to real mouse/keyboard events (posted modifier events alone don't affect real clicks).
 
-### Photomator
-- Keine Plugin-API, nur Tastenkürzel, Kurzbefehle (Shortcuts) und Bedienungshilfen → gröber als die anderen Apps
+### Lightroom Classic (planned)
+- Official route: `.lrplugin` with `LrDevelopController` + `LrSocket` (local TCP to the bridge). Check **tangent-lightroom** (crazyscot, GitHub) first: it might make LR a Tangent client too. MIDI2LR is the mature open-source reference.
 
-## Recherche: Gibt es das schon? (2026-11-21)
+### Photomator (planned)
+- No plugin API: shortcuts, Shortcuts app, Accessibility only.
 
-Ergebnis: **Fertige Lösung gibt es keine.** Einen Ersatz-Hub, der MIDI- oder TourBox-Eingaben über das Tangent-Protokoll an Capture One weitergibt, haben wir nicht gefunden.
+## Prior art (researched 2026-11)
 
-| Fund | Nutzen für uns |
-|---|---|
-| BOME MIDI Translator, Keyboard Maestro, Midi2Macro | MIDI → Tastenkürzel, nur in eine Richtung, keine Wert-Rückmeldung. Genau das wollen wir überwinden |
-| **Capture One AppleScript-API** (seit 2020, Mac) | Zweiter nativer Weg: Loupedeck selbst steuert C1 am Mac so. Kann Dinge, die Tangent nicht hat (z. B. Drehen/Keystone), ist für Drehregler aber langsamer. Als Ergänzung zum App-Adapter prüfen |
-| **tangent-lightroom** (crazyscot, GitHub) | Lightroom-Plugin plus Python-Bridge, spricht mit dem Tangent Hub. Dann wäre auch LR ein Tangent-Client → **ein einheitlicher App-Adapter**. Code lesen, bevor wir ein eigenes `.lrplugin` bauen |
-| **MIDI2LR** (Open Source) | Reife MIDI→Lightroom-Lösung; Loupedeck+ wäre damit in LR sofort nutzbar. Vorbild für Plugin und Beschleunigung |
-| Hammerspoon `hs.tangent`, CommandPost | Tangent-Client-Code in Lua (Gegenseite unseres Hubs); CommandPost hat Adapter für Tangent, Loupedeck und den originalen TourBox (nur Final Cut Pro) |
-| TourBox-Elite-BLE-Gist (AndyCappDev, Nov. 2025) | Einzige Quelle zum Protokoll, nur unter Linux getestet, noch nicht unabhängig bestätigt. Kein Mac-Treiber vorhanden |
+No existing tool forwards MIDI/TourBox input to Capture One over Tangent. Related: BOME MIDI Translator, Keyboard Maestro (shortcuts only, no feedback) · Capture One AppleScript API (slower, but covers things Tangent lacks, e.g. rotation) · tangent-lightroom · MIDI2LR · Hammerspoon `hs.tangent`, CommandPost · tuxbox (TourBox on Linux, source of the unlock/config bytes) · TourBox Elite BLE gist by AndyCappDev (unverified on Mac).
 
-## Ordner
+## Decisions
 
-| Pfad | Inhalt |
-|---|---|
-| `bridge/midi_monitor.swift` | MIDI-Mitschreiber (`swift midi_monitor.swift [Gerät]`) |
-| `bridge/learn_loupedeck.swift` | Geführtes Anlernen des Loupedeck+ mit Sprachansage → `bridge/mappings/loupedeck-plus.json` |
-| `ARCHITEKTUR.md` | Schichten, Datenmodell, Erweiterbarkeit |
-| `bridge/stellwerk.swift` | **Bridge-Prototyp** Loupedeck+ → Capture One (`swift stellwerk.swift`, vor Capture One starten); Belegung in `bridge/mappings/loupedeck-plus-captureone.json` |
-| `bridge/fake_captureone.py` | Test-Client, spielt Capture One gegenüber der Bridge |
-| `bridge/parse_controls.py` | Wertet Capture Ones `controls.xml` aus → `docs/capture-one-controls.md` + `bridge/mappings/capture-one-controls.json` |
-| `app/` | **Menüleisten-App** (Xcode-Projekt `Stellwerk.xcodeproj`, Bundle-ID `MD.Stellwerk`, keine Sandbox): `Core/` (Engine, Mapping), `Input/` (MIDI), `Output/` (Tangent-Hub, Tasten/Event-Tap), `UI/`. Belegungen in `app/Stellwerk/Mappings/` (Vorgabe im Bundle), überschreibbar in `~/Library/Application Support/Stellwerk/Mappings/` |
-| `bridge/fake_loupedeck.swift` | Virtuelles MIDI-Gerät „Loupedeck Test": spielt Tastendrücke ab, Stellwerk testen ohne Hardware |
-| `bridge/fake_tangent_hub.py` | Prototyp: Test-Hub für Capture One (nur Python-Standardbibliothek), interaktiv über das Terminal |
-
-## Entscheidungen
-
-- **Prototyp in Python** (keine Abhängigkeiten), danach **Menüleisten-App in Swift** (CoreMIDI und Network-Framework sind eingebaut, passt zu Xcode)
-- **Universeller Aufbau** (2026-11-21): Kern kennt nur normierte Ereignisse und semantische Aktionen; Adapter eingebaut (Swift) oder extern über lokales WebSocket-JSON-Protokoll; Rückkanal für Werte von Anfang an
-- Versionierung: privates GitHub-Repo. Hersteller-Installer und -Handbücher nicht ablegen (am 2026-11-21 aufgeräumt; bei Bedarf neu von den Herstellern laden)
-- Startkombination: **Loupedeck+ → Capture One**, danach TourBox nativ, danach Lightroom
+- Prototype in Python/Swift scripts, product as a Swift menu bar app (CoreMIDI and Network framework built in).
+- Universal design: the core knows only normalized events and semantic actions; adapters built in (Swift) or external via a local WebSocket JSON protocol (planned); value feedback from the start.
+- Start combination Loupedeck+ → Capture One, then TourBox, then Lightroom.
+- License MIT. Vendor installers and manuals are not stored in the repo.

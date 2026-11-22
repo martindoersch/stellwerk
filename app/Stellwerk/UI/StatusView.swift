@@ -21,12 +21,12 @@ struct StatusView: View {
                 ForEach(DeviceID.allCases, id: \.self) { id in
                     let d = engine.device(id)
                     StatusRow(ok: d.connectedName != nil, warn: true, title: d.name,
-                              detail: d.connectedName != nil ? "verbunden" : "nicht angeschlossen")
+                              detail: d.connectedName != nil ? String(localized: "verbunden") : String(localized: "nicht angeschlossen"))
                 }
                 StatusRow(ok: engine.hubState.isConnected, warn: !engine.hubState.isFailed,
                           title: "Capture One", detail: hubText)
                 if engine.captureOneRunning && engine.hubState == .listening {
-                    Button(engine.restartingCaptureOne ? "Capture One startet neu …" : "Capture One neu starten") {
+                    Button(engine.restartingCaptureOne ? "Capture One startet neu …" as LocalizedStringKey : "Capture One neu starten") {
                         engine.restartCaptureOne()
                     }
                     .disabled(engine.restartingCaptureOne)
@@ -34,8 +34,8 @@ struct StatusView: View {
                     .padding(.leading, 18)
                     .help("Capture One verbindet sich nur beim Start. Wird ordentlich beendet (wie ⌘Q) und neu gestartet.")
                 }
-                StatusRow(ok: engine.accessibilityOK, title: "Bedienungshilfen",
-                          detail: engine.accessibilityOK ? "freigegeben" : "Freigabe fehlt")
+                StatusRow(ok: engine.accessibilityOK, title: String(localized: "Bedienungshilfen"),
+                          detail: engine.accessibilityOK ? String(localized: "freigegeben") : String(localized: "Freigabe fehlt"))
                 if !engine.accessibilityOK {
                     Button("Systemeinstellungen öffnen") { Accessibility.openSettings() }
                         .buttonStyle(.link).font(.caption).padding(.leading, 18)
@@ -48,8 +48,8 @@ struct StatusView: View {
                 if engine.settings.targetMode == .frontmost {
                     LabeledContent("Profil", value: engine.activeProfileName)
                 }
-                LabeledContent("Tasten 1–5", value: engine.keyMode.rawValue)
-                LabeledContent("Farbregler", value: engine.bwActive ? "Schwarzweiß" : "Farbbalance")
+                LabeledContent("Tasten 1–5", value: engine.keyMode.title)
+                LabeledContent("Farbregler", value: engine.bwActive ? String(localized: "Schwarzweiß") : String(localized: "Farbbalance"))
                 LabeledContent("Belichtung", value: engine.value(of: "Exposure") ?? "–")
                 LabeledContent("Zuletzt") {
                     Text(engine.lastAction).lineLimit(1).truncationMode(.middle)
@@ -91,9 +91,9 @@ struct StatusView: View {
 
     private var hubText: String {
         switch engine.hubState {
-        case .starting: return "startet …"
-        case .listening: return "wartet – Capture One (neu) starten"
-        case .connected: return "verbunden"
+        case .starting: return String(localized: "startet …")
+        case .listening: return String(localized: "wartet – Capture One (neu) starten")
+        case .connected: return String(localized: "verbunden")
         case .failed(let msg): return msg
         }
     }

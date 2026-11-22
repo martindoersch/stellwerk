@@ -9,7 +9,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Erledigt
 
 - [x] **Icon: Weiche ⌥** (2026-11-22). Menüleiste: SF Symbol `option` als Template, getrennt = 40 % Deckkraft (ins Bild gezeichnet, `.opacity` greift im Menüleisten-Label nicht verlässlich). App-Icon: im vorhandenen Icon-Composer-Bündel `app/Stellwerk/Stellwerk.icon` den Drehregler-Glyph durch `Assets/option.svg` ersetzt, dunkel auf Lime (Dunkelmodus: Lime-Glas). Ausweichsymbol bei Bedarf: `arrow.triangle.branch`
-- [x] Universelle Architektur festgehalten (`ARCHITEKTUR.md`): Eingabe-Adapter inkl. Software-Surface, semantische Aktionen, Mapping, Feedback, externe Adapter
+- [x] Universelle Architektur festgehalten (`ARCHITECTURE.md`): Eingabe-Adapter inkl. Software-Surface, semantische Aktionen, Mapping, Feedback, externe Adapter
 - [x] Privates Git-Repo angelegt (github.com/martindoersch/stellwerk)
 
 - [x] Resources gesichtet (Loupedeck-, Tangent-Installer, PDFs; TourBox-Datei war die Android-`.apk`, die Mac-App ist schon installiert)
@@ -80,7 +80,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Ganz zum Schluss: Custom Mode (zweite Belegung aller Tasten)
 - [ ] Belegungsdateien: `app/Stellwerk/Mappings/` ist jetzt die Hauptquelle; `bridge/mappings/` nur noch für den Prototyp
 
-- [ ] Kern nach `ARCHITEKTUR.md`: Control-Ereignis, Aktions-Vokabular, Mapping-Format, Feedback-Bus, aktive App erkennen
+- [ ] Kern nach `ARCHITECTURE.md`: Control-Ereignis, Aktions-Vokabular, Mapping-Format, Feedback-Bus, aktive App erkennen
 - [ ] Swift-Protokolle `InputAdapter` / `OutputAdapter` mit Capabilities
 - [ ] Externes Adapter-Protokoll (lokaler WebSocket, JSON) festlegen; OSC als Alternative prüfen
 - [ ] Tangent-Hub-Server in Swift (Network-Framework), MIDI über CoreMIDI

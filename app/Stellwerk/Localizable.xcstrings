@@ -1,0 +1,1342 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "": {
+      "shouldTranslate": false
+    },
+    "%@ …": {
+      "shouldTranslate": false
+    },
+    "%@ %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%@ fehlt – Gerät anlernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ missing – train the device"
+          }
+        }
+      }
+    },
+    "%@ fehlt oder ist kein gültiges JSON": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is missing or not valid JSON"
+          }
+        }
+      }
+    },
+    "%@ läuft nicht – Menüeinträge zu den Kürzeln erscheinen, sobald es läuft.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ isn’t running – menu items for the shortcuts appear once it’s running."
+          }
+        }
+      }
+    },
+    "%@ steht nicht in controls.xml": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is not in controls.xml"
+          }
+        }
+      }
+    },
+    "%@ zurückgesetzt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ reset"
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%@: in %@ nicht belegt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: in %2$@ nicht belegt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: not assigned in %2$@"
+          }
+        }
+      }
+    },
+    "%@: nicht belegt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: not assigned"
+          }
+        }
+      }
+    },
+    "%@: Tastenkürzel %@ nicht lesbar": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: Tastenkürzel %2$@ nicht lesbar"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: can’t read keyboard shortcut %2$@"
+          }
+        }
+      }
+    },
+    "← %@   → %@   Drücken %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "← %1$@   → %2$@   Drücken %3$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "← %1$@   → %2$@   Press %3$@"
+          }
+        }
+      }
+    },
+    "→ %@": {
+      "shouldTranslate": false
+    },
+    "● verbunden, ○ nicht angeschlossen. Taste an einem Gerät drücken wechselt automatisch dorthin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "● connected, ○ not connected. Pressing a button on a device switches to it automatically."
+          }
+        }
+      }
+    },
+    "⚠️ %@": {
+      "shouldTranslate": false
+    },
+    "⚠️ %@ läuft nicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⚠️ %@ isn’t running"
+          }
+        }
+      }
+    },
+    "⚠️ Bedienungshilfen-Freigabe fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⚠️ Accessibility permission missing"
+          }
+        }
+      }
+    },
+    "Aktion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Action"
+          }
+        }
+      }
+    },
+    "Aktion suchen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search actions…"
+          }
+        }
+      }
+    },
+    "Alle zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset All"
+          }
+        }
+      }
+    },
+    "Allgemein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        }
+      }
+    },
+    "Anderes Programm …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other App…"
+          }
+        }
+      }
+    },
+    "Ändern …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change…"
+          }
+        }
+      }
+    },
+    "Anzeige": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display"
+          }
+        }
+      }
+    },
+    "Auf Vorgabe zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Defaults"
+          }
+        }
+      }
+    },
+    "aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "off"
+          }
+        }
+      }
+    },
+    "Aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "Autostart: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch at login: %@"
+          }
+        }
+      }
+    },
+    "Bedienungshilfen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility"
+          }
+        }
+      }
+    },
+    "Beenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        }
+      }
+    },
+    "Beim Anmelden starten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch at Login"
+          }
+        }
+      }
+    },
+    "Belegung geladen, %lld Hinweis(e)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mappings loaded, %lld warning(s)"
+          }
+        }
+      }
+    },
+    "Belegung neu geladen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mappings reloaded"
+          }
+        }
+      }
+    },
+    "Belegungsdateien": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapping Files"
+          }
+        }
+      }
+    },
+    "Belegungsdateien neu einlesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reload mapping files"
+          }
+        }
+      }
+    },
+    "Belegungsdateien zum Bearbeiten öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open mapping files for editing"
+          }
+        }
+      }
+    },
+    "Belichtung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exposure"
+          }
+        }
+      }
+    },
+    "Beschleunigung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceleration"
+          }
+        }
+      }
+    },
+    "Capture One": {
+      "shouldTranslate": false
+    },
+    "Capture One beendet sich nicht – Dialog offen?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture One won’t quit – is a dialog open?"
+          }
+        }
+      }
+    },
+    "Capture One getrennt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture One disconnected"
+          }
+        }
+      }
+    },
+    "Capture One neu starten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart Capture One"
+          }
+        }
+      }
+    },
+    "Capture One startet neu …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restarting Capture One…"
+          }
+        }
+      }
+    },
+    "Capture One verbindet sich nur beim Start. Wird ordentlich beendet (wie ⌘Q) und neu gestartet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture One only connects at launch. It quits normally (like ⌘Q) and relaunches."
+          }
+        }
+      }
+    },
+    "Capture One verbunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture One connected"
+          }
+        }
+      }
+    },
+    "Capture One wird neu gestartet …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restarting Capture One…"
+          }
+        }
+      }
+    },
+    "capture-one-controls.json fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "capture-one-controls.json is missing"
+          }
+        }
+      }
+    },
+    "CC %lld: nicht angelernt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CC %lld: not trained"
+          }
+        }
+      }
+    },
+    "Die Taste macht nichts.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The button does nothing."
+          }
+        }
+      }
+    },
+    "Drehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning"
+          }
+        }
+      }
+    },
+    "Drehregler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dials"
+          }
+        }
+      }
+    },
+    "Drücken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press"
+          }
+        }
+      }
+    },
+    "Einstellungen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings…"
+          }
+        }
+      }
+    },
+    "Entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        }
+      }
+    },
+    "Farbbalance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color Balance"
+          }
+        }
+      }
+    },
+    "Farben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colors"
+          }
+        }
+      }
+    },
+    "Farbregler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dials"
+          }
+        }
+      }
+    },
+    "Farbregler: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color dials: %@"
+          }
+        }
+      }
+    },
+    "Fein (Alt/⌥ halten)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fine (hold Option/⌥)"
+          }
+        }
+      }
+    },
+    "Fertig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Fn (in Kombination)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fn (in combination)"
+          }
+        }
+      }
+    },
+    "Freigabe fehlt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission missing"
+          }
+        }
+      }
+    },
+    "freigegeben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "granted"
+          }
+        }
+      }
+    },
+    "geändert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "changed"
+          }
+        }
+      }
+    },
+    "Gerät": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device"
+          }
+        }
+      }
+    },
+    "Geschwindigkeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        }
+      }
+    },
+    "Geschwindigkeit = Schrittweite pro Raste. Beschleunigung: Je schneller du drehst, desto größer die Schritte.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed = step size per detent. Acceleration: the faster you turn, the bigger the steps."
+          }
+        }
+      }
+    },
+    "Grob (Shift/⇧ halten)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coarse (hold Shift/⇧)"
+          }
+        }
+      }
+    },
+    "Halten beim Drehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold While Turning"
+          }
+        }
+      }
+    },
+    "HUD.keys": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Tasten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keys"
+          }
+        }
+      }
+    },
+    "Im aktiven Programm (Profile)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the active app (profiles)"
+          }
+        }
+      }
+    },
+    "Im Menü gibt es kein Kürzel %@ – es wird als Tastendruck geschickt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No menu item uses %@ – it’s sent as a keystroke."
+          }
+        }
+      }
+    },
+    "Immer in Capture One": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always in Capture One"
+          }
+        }
+      }
+    },
+    "Immer in Capture One: wirkt auch, wenn ein anderes Programm vorne ist. Im aktiven Programm: Programme mit eigenem Profil (Tab „Tasten\") bekommen ihre Tastenkürzel, alle anderen die Capture-One-Belegung.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always in Capture One: works even when another app is in front. In the active app: apps with their own profile (Buttons tab) get their keyboard shortcuts, all others the Capture One mapping."
+          }
+        }
+      }
+    },
+    "kein Menüeintrag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no menu item"
+          }
+        }
+      }
+    },
+    "kein Menüeintrag für %@ → Tastendruck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no menu item for %@ → keystroke"
+          }
+        }
+      }
+    },
+    "Klicken und Kürzel drücken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click and press a shortcut"
+          }
+        }
+      }
+    },
+    "Kombi-Taste wie Fn (in Kombination)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier button like Fn (in combination)"
+          }
+        }
+      }
+    },
+    "Kürzel drücken … (Esc = abbrechen)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press a shortcut… (Esc = cancel)"
+          }
+        }
+      }
+    },
+    "Kurzes Schild unten in der Bildschirmmitte, z. B. „Farben\" oder „Schwarzweiß\".": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A brief label at the bottom center of the screen, e.g. “Colors” or “Black & White”."
+          }
+        }
+      }
+    },
+    "Leertaste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Space"
+          }
+        }
+      }
+    },
+    "Löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Loupedeck+ · TourBox → Capture One": {
+      "shouldTranslate": false
+    },
+    "Menü „%@\"": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu “%@”"
+          }
+        }
+      }
+    },
+    "Modus: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode: %@"
+          }
+        }
+      }
+    },
+    "Moduswechsel einblenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show mode changes"
+          }
+        }
+      }
+    },
+    "Nach links": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left"
+          }
+        }
+      }
+    },
+    "Nach rechts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right"
+          }
+        }
+      }
+    },
+    "Neu laden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reload"
+          }
+        }
+      }
+    },
+    "nicht angeschlossen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not connected"
+          }
+        }
+      }
+    },
+    "Note %lld: nicht angelernt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note %lld: not trained"
+          }
+        }
+      }
+    },
+    "Ordner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folder"
+          }
+        }
+      }
+    },
+    "Ordner öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Folder"
+          }
+        }
+      }
+    },
+    "Port 64246 belegt? (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port 64246 in use? (%@)"
+          }
+        }
+      }
+    },
+    "Port 64246 nicht verfügbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port 64246 not available"
+          }
+        }
+      }
+    },
+    "Pro Raste ein Tastendruck, z. B. ⌘− / ⌘+ zum Zoomen oder Pfeiltasten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One keystroke per detent, e.g. ⌘− / ⌘+ to zoom, or arrow keys."
+          }
+        }
+      }
+    },
+    "Profil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "Profil „%@\" löschen?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete profile “%@”?"
+          }
+        }
+      }
+    },
+    "Profil löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Profile"
+          }
+        }
+      }
+    },
+    "Profile wirken erst mit „Im aktiven Programm\" (Allgemein).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiles only take effect with “In the active app” (General)."
+          }
+        }
+      }
+    },
+    "Programm hinzufügen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add App"
+          }
+        }
+      }
+    },
+    "Programme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apps"
+          }
+        }
+      }
+    },
+    "Schwarzweiß": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Black & White"
+          }
+        }
+      }
+    },
+    "Schwarzweiß + Farbregler umschalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle Black & White + color dials"
+          }
+        }
+      }
+    },
+    "Start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup"
+          }
+        }
+      }
+    },
+    "Start fehlgeschlagen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch failed: %@"
+          }
+        }
+      }
+    },
+    "startet …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "starting…"
+          }
+        }
+      }
+    },
+    "Stellwerk": {
+      "shouldTranslate": false
+    },
+    "Stellwerk – Einstellungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stellwerk – Settings"
+          }
+        }
+      }
+    },
+    "Stellwerk muss vor Capture One laufen – sonst Capture One neu starten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stellwerk must be running before Capture One – otherwise restart Capture One."
+          }
+        }
+      }
+    },
+    "Stern/Farbe/Taste je nach Modus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Star/color/key depending on mode"
+          }
+        }
+      }
+    },
+    "Sterne": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stars"
+          }
+        }
+      }
+    },
+    "Systemeinstellungen öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings"
+          }
+        }
+      }
+    },
+    "Tangent: unbekannter Befehl %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangent: unknown command %@"
+          }
+        }
+      }
+    },
+    "Taste %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key %@"
+          }
+        }
+      }
+    },
+    "Taste am Gerät drücken, um sie hier zu finden (mit %@: %@-Ebene). Drehregler-Drücken setzt den Regler zurück.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Taste am Gerät drücken, um sie hier zu finden (mit %1$@: %2$@-Ebene). Drehregler-Drücken setzt den Regler zurück."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press a button on the device to find it here (with %1$@: %2$@ layer). Pressing a dial resets its control."
+          }
+        }
+      }
+    },
+    "Taste drücken oder Drehregler drehen, um sie hier zu finden (mit %@: %@-Ebene).": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Taste drücken oder Drehregler drehen, um sie hier zu finden (mit %1$@: %2$@-Ebene)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press a button or turn a dial to find it here (with %1$@: %2$@ layer)."
+          }
+        }
+      }
+    },
+    "Tasten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buttons"
+          }
+        }
+      }
+    },
+    "Tasten (Shift/Ctrl/Cmd/Alt/Tab)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keys (Shift/Ctrl/Cmd/Alt/Tab)"
+          }
+        }
+      }
+    },
+    "Tasten 1–5": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buttons 1–5"
+          }
+        }
+      }
+    },
+    "Tasten und Drehregler wirken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buttons and dials act"
+          }
+        }
+      }
+    },
+    "Tastenkürzel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut"
+          }
+        }
+      }
+    },
+    "TourBox %@: nicht angelernt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TourBox %@: not trained"
+          }
+        }
+      }
+    },
+    "TourBox: %@ belegt – TourBox Console beenden? (%@)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "TourBox: %1$@ belegt – TourBox Console beenden? (%2$@)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TourBox: %1$@ in use – quit TourBox Console? (%2$@)"
+          }
+        }
+      }
+    },
+    "Umschalter Sterne/Farben (Fn: Tasten)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle stars/colors (Fn: keys)"
+          }
+        }
+      }
+    },
+    "verbunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "connected"
+          }
+        }
+      }
+    },
+    "Vorgabe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default"
+          }
+        }
+      }
+    },
+    "Vorgabe: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default: %@"
+          }
+        }
+      }
+    },
+    "wartet – Capture One (neu) starten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "waiting – (re)start Capture One"
+          }
+        }
+      }
+    },
+    "Wie in Photoshop. Gilt für die Mac-Tastatur und für Alt/Shift am Loupedeck im Tasten-Modus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Like in Photoshop. Applies to the Mac keyboard and to Alt/Shift on the Loupedeck in keys mode."
+          }
+        }
+      }
+    },
+    "Wird an %@ geschickt, wenn es vorne ist.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent to %@ when it’s in front."
+          }
+        }
+      }
+    },
+    "Wird an Capture One geschickt (über das Menü, wenn es dort einen Eintrag mit diesem Kürzel gibt).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent to Capture One (via the menu if it has an item with this shortcut)."
+          }
+        }
+      }
+    },
+    "Zuletzt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

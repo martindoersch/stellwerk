@@ -1,5 +1,5 @@
 // Belegungsdaten: Geräteprofil (MIDI → Beschriftung), Belegung (Beschriftung → Aktion),
-// Capture-One-Katalog (Namen, Schrittweiten). Alles JSON, siehe ARCHITEKTUR.md.
+// Capture-One-Katalog (Namen, Schrittweiten). Alles JSON, siehe ARCHITECTURE.md.
 import AppKit
 import Carbon.HIToolbox
 import CoreGraphics
@@ -10,6 +10,12 @@ func hexID(_ s: String) -> UInt32? {
 }
 
 func hexStr(_ id: UInt32) -> String { String(format: "0x%X", id) }
+
+/// Anzeigename eines Bedienelements. Die Namen in den Gerätedateien sind zugleich Schlüssel
+/// (Belegung, Einstellungen) und bleiben unverändert; übersetzt wird nur die Anzeige (Tabelle „Controls").
+func controlLabel(_ name: String) -> String {
+    Bundle.main.localizedString(forKey: name, value: name, table: "Controls")
+}
 
 extension Array { subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil } }
 
@@ -184,7 +190,7 @@ func prettyKeys(_ s: String) -> String {
         case "cmd": mods += "⌘"
         default:
             let sym = ["left": "←", "right": "→", "up": "↑", "down": "↓", "return": "↩", "tab": "⇥",
-                       "space": "Leertaste", "delete": "⌫", "esc": "⎋", "plus": "+"]
+                       "space": String(localized: "Leertaste"), "delete": "⌫", "esc": "⎋", "plus": "+"]
             key = sym[part] ?? part.uppercased()
         }
     }
@@ -252,7 +258,7 @@ struct Mapping {
                 if let a = (v["action"] as? String).flatMap(hexID) {
                     out[name] = .action(a)
                 } else if let k = v["keys"] as? String {
-                    if let combo = Keys.parse(k) { out[name] = .keys(combo) } else { warnings.append("\(name): Tastenkürzel \(k) nicht lesbar") }
+                    if let combo = Keys.parse(k) { out[name] = .keys(combo) } else { warnings.append(String(localized: "\(name): Tastenkürzel \(k) nicht lesbar")) }
                 }
             }
             return out
@@ -284,7 +290,7 @@ struct Mapping {
         let buttonIDs = (Array(buttons.values) + Array(fnButtons.values)).compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
         let dialIDs = (Array(dials.values) + Array(fnDials.values) + Array(bwDials.values)).flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
         let all = Set(dialIDs + buttonIDs + starIDs + colorIDs + [starsClear, colorsClear, bwAction].compactMap { $0 })
-        for id in all where catalog.items[id] == nil { warnings.append("\(hexStr(id)) steht nicht in controls.xml") }
+        for id in all where catalog.items[id] == nil { warnings.append(String(localized: "\(hexStr(id)) steht nicht in controls.xml")) }
     }
 
     /// Alle Regler-IDs, deren Startwert wir abfragen

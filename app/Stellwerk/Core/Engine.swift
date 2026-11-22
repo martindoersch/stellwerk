@@ -7,7 +7,16 @@ import ServiceManagement
 
 @Observable
 final class Engine {
-    enum KeyMode: String { case stars = "Sterne", colors = "Farben", modifiers = "Tasten (Shift/Ctrl/Cmd/Alt/Tab)" }
+    enum KeyMode {
+        case stars, colors, modifiers
+        var title: String {
+            switch self {
+            case .stars: String(localized: "Sterne")
+            case .colors: String(localized: "Farben")
+            case .modifiers: String(localized: "Tasten (Shift/Ctrl/Cmd/Alt/Tab)")
+            }
+        }
+    }
 
     static let captureOneBundleID = "com.captureone.captureone16"
     static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile] } + ["capture-one-controls.json"]
@@ -79,7 +88,7 @@ final class Engine {
             guard let self else { return }
             self.hubState = st
             if case .connected = st {
-                self.log("Capture One verbunden")
+                self.log(String(localized: "Capture One verbunden"))
                 self.requestStartValues()
             }
         }
@@ -134,13 +143,13 @@ final class Engine {
     func loadMappings() {
         warnings.removeAll()
         if let c = MappingStore.load("capture-one-controls.json") { catalog = Catalog(json: c) }
-        else { warnings.append("capture-one-controls.json fehlt") }
+        else { warnings.append(String(localized: "capture-one-controls.json fehlt")) }
         for id in DeviceID.allCases {
             var d = device(id)
             if let p = MappingStore.load(id.profileFile) { d.profile = DeviceProfile(json: p) }
-            else { warnings.append("\(id.profileFile) fehlt – Gerät anlernen") }
+            else { warnings.append(String(localized: "\(id.profileFile) fehlt – Gerät anlernen")) }
             if let m = MappingStore.load(id.mappingFile) { d.defaultMapping = Mapping(json: m, catalog: catalog) }
-            else { warnings.append("\(id.mappingFile) fehlt oder ist kein gültiges JSON") }
+            else { warnings.append(String(localized: "\(id.mappingFile) fehlt oder ist kein gültiges JSON")) }
             devices[id] = d
             warnings += d.defaultMapping.warnings.map { "\(d.name): \($0)" }
         }
@@ -163,7 +172,8 @@ final class Engine {
 
     func reloadMappings() {
         loadMappings()
-        log(warnings.isEmpty ? "Belegung neu geladen" : "Belegung geladen, \(warnings.count) Hinweis(e)")
+        log(warnings.isEmpty ? String(localized: "Belegung neu geladen")
+            : String(localized: "Belegung geladen, \(warnings.count) Hinweis(e)"))
     }
 
     func openMappingFolder() {
@@ -173,7 +183,7 @@ final class Engine {
     func setLaunchAtLogin(_ on: Bool) {
         do {
             if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-        } catch { log("Autostart: \(error.localizedDescription)") }
+        } catch { log(String(localized: "Autostart: \(error.localizedDescription)")) }
         launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
@@ -192,7 +202,7 @@ final class Engine {
               let app = NSRunningApplication.runningApplications(withBundleIdentifier: Self.captureOneBundleID).first,
               let url = app.bundleURL else { return }
         restartingCaptureOne = true
-        log("Capture One wird neu gestartet …")
+        log(String(localized: "Capture One wird neu gestartet …"))
         app.terminate()
         waitForQuit(app, url: url, tries: 0)
     }
@@ -203,7 +213,7 @@ final class Engine {
                 DispatchQueue.main.async {
                     MainActor.assumeIsolated {
                         self?.restartingCaptureOne = false
-                        if let err { self?.log("Start fehlgeschlagen: \(err.localizedDescription)") }
+                        if let err { self?.log(String(localized: "Start fehlgeschlagen: \(err.localizedDescription)")) }
                     }
                 }
             }
@@ -211,7 +221,7 @@ final class Engine {
         }
         guard tries < 60 else {   // 30 s: vermutlich wartet ein Dialog in Capture One
             restartingCaptureOne = false
-            log("Capture One beendet sich nicht – Dialog offen?")
+            log(String(localized: "Capture One beendet sich nicht – Dialog offen?"))
             return
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -351,13 +361,17 @@ final class Engine {
     /// Tasten mit fester Sonderfunktion (in den Einstellungen nicht frei belegbar)
     /// In Programmprofilen bleiben nur Fn und der Modus-Umschalter fest.
     func specialRole(_ name: String, inAppProfile: Bool = false) -> String? {
-        if name == mapping.modeToggle { return "Umschalter Sterne/Farben (Fn: Tasten)" }
-        if name == mapping.fnKey { return mapping.fnKey == "Fn" ? "Fn (in Kombination)" : "Kombi-Taste wie Fn (in Kombination)" }
+        if name == mapping.modeToggle { return String(localized: "Umschalter Sterne/Farben (Fn: Tasten)") }
+        if name == mapping.fnKey {
+            return mapping.fnKey == "Fn" ? String(localized: "Fn (in Kombination)") : String(localized: "Kombi-Taste wie Fn (in Kombination)")
+        }
         if inAppProfile { return nil }
-        if name == mapping.bwToggle { return "Schwarzweiß + Farbregler umschalten" }
-        if mapping.modeKeys.contains(name) { return "Stern/Farbe/Taste je nach Modus" }
+        if name == mapping.bwToggle { return String(localized: "Schwarzweiß + Farbregler umschalten") }
+        if mapping.modeKeys.contains(name) { return String(localized: "Stern/Farbe/Taste je nach Modus") }
         return nil
     }
+
+    private func notAssigned(_ name: String) -> String { String(localized: "\(controlLabel(name)): nicht belegt") }
 
     private func log(_ s: String) {
         lastAction = s
@@ -373,9 +387,9 @@ final class Engine {
         switch status & 0xF0 {
         case 0xB0:
             let ticks = d2 < 64 ? d2 : d2 - 128   // relativ: 01 = +1, 7F = −1
-            if let name = p.dialByCC[d1] { turn(.loupedeck, name, ticks: ticks) } else { log("CC \(d1): nicht angelernt") }
+            if let name = p.dialByCC[d1] { turn(.loupedeck, name, ticks: ticks) } else { log(String(localized: "CC \(d1): nicht angelernt")) }
         case 0x90 where d2 > 0:
-            if let name = p.nameByNote[d1] { press(.loupedeck, name) } else { log("Note \(d1): nicht angelernt") }
+            if let name = p.nameByNote[d1] { press(.loupedeck, name) } else { log(String(localized: "Note \(d1): nicht angelernt")) }
         case 0x80, 0x90:   // NoteOff bzw. NoteOn mit Velocity 0 = losgelassen
             if let name = p.nameByNote[d1] { release(.loupedeck, name) }
         default: break
@@ -391,7 +405,7 @@ final class Engine {
         } else if let name = p.nameByNote[code] {
             if b & 0x80 != 0 { release(.tourbox, name) } else { press(.tourbox, name) }
         } else {
-            log(String(format: "TourBox %02X: nicht angelernt", b))
+            log(String(localized: "TourBox \(String(format: "%02X", b)): nicht angelernt"))
         }
         #if DEBUG
         trace(String(format: "%02X", b) + "  gehalten: \(held[.tourbox, default: []].sorted())  → \(lastAction)")
@@ -431,16 +445,16 @@ final class Engine {
             return
         }
         if let app = frontApp(dev) {
-            guard let k = ticks > 0 ? app.dials[name]?.right : app.dials[name]?.left else { log("\(name): nicht belegt"); return }
+            guard let k = ticks > 0 ? app.dials[name]?.right : app.dials[name]?.left else { log(notAssigned(name)); return }
             for _ in 0 ..< abs(ticks) { keys.sendToFront(k, viaMenu: false) }
-            lastAction = "\(name): \(prettyKeys(k.text))"
+            lastAction = "\(controlLabel(name)): \(prettyKeys(k.text))"
             return
         }
-        guard let b = dialBinding(dev, name) else { log("\(name): nicht belegt"); return }
+        guard let b = dialBinding(dev, name) else { log(notAssigned(name)); return }
         if let plus = b.plus, let minus = b.minus {   // Drehregler löst Aktionen aus
             let a = ticks > 0 ? plus : minus
             for _ in 0 ..< abs(ticks) { hub.action(a) }
-            log("\(name): \(catalog.name(a))")
+            log("\(controlLabel(name)): \(catalog.name(a))")
             return
         }
         guard let p = b.param else { return }
@@ -478,11 +492,11 @@ final class Engine {
         }
         if name == m.modeToggle {
             keyMode = fnHeld ? .modifiers : (keyMode == .stars ? .colors : .stars)
-            log("Modus: \(keyMode.rawValue)")
+            log(String(localized: "Modus: \(keyMode.title)"))
             switch keyMode {
-            case .stars: announce("Sterne", symbol: "star.fill")
-            case .colors: announce("Farben", symbol: "paintpalette.fill")
-            case .modifiers: announce("Tasten", symbol: "keyboard")
+            case .stars: announce(String(localized: "Sterne"), symbol: "star.fill")
+            case .colors: announce(String(localized: "Farben"), symbol: "paintpalette.fill")
+            case .modifiers: announce(String(localized: "HUD.keys", defaultValue: "Tasten"), symbol: "keyboard")
             }
             return
         }
@@ -492,34 +506,35 @@ final class Engine {
             switch keyMode {
             case .stars: if let a = fnHeld ? m.starsClear : m.starIDs[safe: i] { trigger(a) }
             case .colors: if let a = fnHeld ? m.colorsClear : m.colorIDs[safe: i] { trigger(a) }
-            case .modifiers: keys.postReal(name, down: true); lastAction = "Taste \(name)"
+            case .modifiers: keys.postReal(name, down: true); lastAction = String(localized: "Taste \(controlLabel(name))")
             }
             return
         }
         if name == m.fnKey { return }   // Fn wirkt nur in Kombination
         if let app {
             let k = (fnHeld ? app.fnButtons[name] : nil) ?? app.buttons[name] ?? (isDial ? app.dials[name]?.press : nil)
-            if let k { log("\(fnHeld ? "\(m.fnKey)+" : "")\(name): \(prettyKeys(k.text))"); keys.sendToFront(k) }
-            else { log("\(name): in \(app.name) nicht belegt") }
+            if let k { log("\(fnHeld ? "\(m.fnKey)+" : "")\(controlLabel(name)): \(prettyKeys(k.text))"); keys.sendToFront(k) }
+            else { log(String(localized: "\(controlLabel(name)): in \(app.name) nicht belegt")) }
             return
         }
         if name == m.bwToggle {
             bwActive.toggle()
-            log("Farbregler: \(bwActive ? "Schwarzweiß" : "Farbbalance")")
-            announce(bwActive ? "Schwarzweiß" : "Farbbalance",
+            let colorMode = bwActive ? String(localized: "Schwarzweiß") : String(localized: "Farbbalance")
+            log(String(localized: "Farbregler: \(colorMode)"))
+            announce(colorMode,
                      symbol: bwActive ? "circle.lefthalf.filled" : "circle.hexagongrid.fill")
             if let a = m.bwAction { hub.action(a) }
             return
         }
         if fnHeld, let b = m.fnButtons[name] {   // Fn + Taste
-            run(b, name: "\(m.fnKey)+\(name)")
+            run(b, name: "\(m.fnKey)+\(controlLabel(name))")
             return
         }
         switch m.buttons[name] {
-        case let b?: run(b, name: name)
+        case let b?: run(b, name: controlLabel(name))
         case nil:   // Drücken eines Drehreglers setzt seinen Regler zurück (mit Fn: den Fn-Regler)
-            if let p = dialBinding(dev, name)?.param { hub.reset(p); log("\(catalog.name(p)) zurückgesetzt") }
-            else { log("\(name): nicht belegt") }
+            if let p = dialBinding(dev, name)?.param { hub.reset(p); log(String(localized: "\(catalog.name(p)) zurückgesetzt")) }
+            else { log(notAssigned(name)) }
         }
     }
 

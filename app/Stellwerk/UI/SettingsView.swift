@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     /// Fenstertitel – die Engine erkennt daran, ob die Einstellungen vorne sind (Anlernen)
-    static let windowTitle = "Stellwerk – Einstellungen"
+    static var windowTitle: String { String(localized: "Stellwerk – Einstellungen") }
 
     @Bindable var engine: Engine
 
@@ -79,7 +79,7 @@ private struct DialSettingsView: View {
                 SliderRow(title: "Geschwindigkeit", value: bind(\.speed), range: 0.25...3, step: 0.05,
                           text: String(format: "× %.2f", engine.settings.speed))
                 SliderRow(title: "Beschleunigung", value: bind(\.acceleration), range: 0...2.5, step: 0.1,
-                          text: engine.settings.acceleration == 0 ? "aus" : accelText)
+                          text: engine.settings.acceleration == 0 ? String(localized: "aus") : accelText)
             } header: {
                 Text("Drehen")
             } footer: {
@@ -123,7 +123,7 @@ private struct DialSettingsView: View {
 }
 
 private struct SliderRow: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
@@ -194,9 +194,9 @@ private struct ButtonSettingsView: View {
             }
             HStack {
                 let fn = engine.fnLabel
-                Text(app == nil
-                     ? "Taste am Gerät drücken, um sie hier zu finden (mit \(fn): \(fn)-Ebene). Drehregler-Drücken setzt den Regler zurück."
-                     : "Taste drücken oder Drehregler drehen, um sie hier zu finden (mit \(fn): \(fn)-Ebene).")
+                (app == nil
+                     ? Text("Taste am Gerät drücken, um sie hier zu finden (mit \(fn): \(fn)-Ebene). Drehregler-Drücken setzt den Regler zurück.")
+                     : Text("Taste drücken oder Drehregler drehen, um sie hier zu finden (mit \(fn): \(fn)-Ebene)."))
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 if app == nil {
@@ -252,7 +252,7 @@ private struct ButtonSettingsView: View {
     @ViewBuilder
     private func appRow(_ name: String, _ p: AppProfile) -> some View {
         HStack {
-            Text(name).frame(width: 110, alignment: .leading)
+            Text(controlLabel(name)).frame(width: 110, alignment: .leading)
             if let role = engine.specialRole(name, inAppProfile: true) {
                 Text(role).foregroundStyle(.secondary)
                 Spacer()
@@ -283,8 +283,9 @@ private struct ButtonSettingsView: View {
     private func dialRow(_ name: String, _ p: AppProfile) -> some View {
         let d = engine.appBindings(p.bundleID).dials[name] ?? DialKeys()
         HStack {
-            Text(name).lineLimit(1).frame(width: 170, alignment: .leading)
-            Text(d.isEmpty ? "–" : "← \(d.left.map(prettyKeys) ?? "–")   → \(d.right.map(prettyKeys) ?? "–")   Drücken \(d.press.map(prettyKeys) ?? "–")")
+            Text(controlLabel(name)).lineLimit(1).frame(width: 170, alignment: .leading)
+            (d.isEmpty ? Text(verbatim: "–")
+                : Text("← \(d.left.map(prettyKeys) ?? "–")   → \(d.right.map(prettyKeys) ?? "–")   Drücken \(d.press.map(prettyKeys) ?? "–")"))
                 .foregroundStyle(d.isEmpty ? .secondary : .primary)
             Spacer()
             Button("Ändern …") { editing = EditTarget(name: name, fn: false, dial: true) }
@@ -296,7 +297,7 @@ private struct ButtonSettingsView: View {
     private func row(_ name: String) -> some View {
         let changed = engine.deviceSettings.buttons[name] != nil || engine.deviceSettings.fnButtons[name] != nil
         HStack {
-            Text(name).frame(width: 110, alignment: .leading)
+            Text(controlLabel(name)).frame(width: 110, alignment: .leading)
             if let role = engine.specialRole(name) {
                 Text(role).foregroundStyle(.secondary)
                 Spacer()
@@ -380,7 +381,7 @@ private struct MenuHint: View {
 extension ButtonSettingsView {
     /// Knopf der zuletzt am Gerät gedrückten Ebene (normal oder Fn) wird betont
     @ViewBuilder
-    private func editButton(_ title: String, name: String, fn: Bool) -> some View {
+    private func editButton(_ title: LocalizedStringKey, name: String, fn: Bool) -> some View {
         let button = Button(title) { editing = EditTarget(name: name, fn: fn) }.controlSize(.small)
         if highlighted == "b:" + name && highlightedFn == fn {
             button.buttonStyle(.borderedProminent).foregroundStyle(.black)
@@ -391,7 +392,17 @@ extension ButtonSettingsView {
 }
 
 private struct ButtonEditor: View {
-    enum Kind: String, CaseIterable { case standard = "Vorgabe", action = "Aktion", keys = "Tastenkürzel", off = "Aus" }
+    enum Kind: CaseIterable {
+        case standard, action, keys, off
+        var title: LocalizedStringKey {
+            switch self {
+            case .standard: "Vorgabe"
+            case .action: "Aktion"
+            case .keys: "Tastenkürzel"
+            case .off: "Aus"
+            }
+        }
+    }
 
     @Bindable var engine: Engine
     let name: String
@@ -401,9 +412,9 @@ private struct ButtonEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(fn ? "\(engine.fnLabel) + \(name)" : name).font(.headline)
+            Text(verbatim: fn ? "\(engine.fnLabel) + \(controlLabel(name))" : controlLabel(name)).font(.headline)
             Picker("", selection: $kind) {
-                ForEach(Kind.allCases, id: \.self) { Text($0.rawValue) }
+                ForEach(Kind.allCases, id: \.self) { Text($0.title) }
             }
             .pickerStyle(.segmented).labelsHidden()
             .onChange(of: kind) { _, k in
@@ -543,7 +554,7 @@ private struct AppButtonEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("\(fn ? "\(engine.fnLabel) + " : "")\(name) – \(profileName)").font(.headline)
+            Text(verbatim: "\(fn ? "\(engine.fnLabel) + " : "")\(controlLabel(name)) – \(profileName)").font(.headline)
             ShortcutRecorder(current: current) { engine.setAppKeys($0, for: name, fn: fn, in: bundleID) }
             MenuHint(engine: engine, combo: current.flatMap { Keys.parse($0) }, app: bundleID)
             HStack {
@@ -574,7 +585,7 @@ private struct DialKeyEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("\(name) – \(engine.appProfile(bundleID)?.name ?? bundleID)").font(.headline)
+            Text(verbatim: "\(controlLabel(name)) – \(engine.appProfile(bundleID)?.name ?? bundleID)").font(.headline)
             slot("Nach links", \.left)
             slot("Nach rechts", \.right)
             slot("Drücken", \.press)
@@ -587,7 +598,7 @@ private struct DialKeyEditor: View {
 
     private var keys: DialKeys { engine.appBindings(bundleID).dials[name] ?? DialKeys() }
 
-    private func slot(_ title: String, _ kp: WritableKeyPath<DialKeys, String?>) -> some View {
+    private func slot(_ title: LocalizedStringKey, _ kp: WritableKeyPath<DialKeys, String?>) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             slotRow(title, kp)
             MenuHint(engine: engine, combo: keys[keyPath: kp].flatMap { Keys.parse($0) }, app: bundleID)
@@ -595,7 +606,7 @@ private struct DialKeyEditor: View {
         }
     }
 
-    private func slotRow(_ title: String, _ kp: WritableKeyPath<DialKeys, String?>) -> some View {
+    private func slotRow(_ title: LocalizedStringKey, _ kp: WritableKeyPath<DialKeys, String?>) -> some View {
         HStack {
             Text(title).frame(width: 90, alignment: .leading)
             ShortcutRecorder(current: keys[keyPath: kp]) { v in
@@ -629,7 +640,11 @@ struct ShortcutRecorder: View {
         Button {
             recording ? stop() : start()
         } label: {
-            Text(recording ? "Kürzel drücken … (Esc = abbrechen)" : (current.map(prettyKeys) ?? "Klicken und Kürzel drücken"))
+            Group {
+                if recording { Text("Kürzel drücken … (Esc = abbrechen)") }
+                else if let current { Text(verbatim: prettyKeys(current)) }
+                else { Text("Klicken und Kürzel drücken") }
+            }
                 .frame(maxWidth: .infinity)
         }
         .controlSize(.large)
