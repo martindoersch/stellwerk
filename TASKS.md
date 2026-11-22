@@ -5,11 +5,12 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Als Nächstes (Martin, 2026-11-21)
 
 - [ ] **Programmprofile ausbauen und im Alltag testen.** Grundlage steht: Modus „Im aktiven Programm“, Profile pro Gerät, Kürzel für Tasten und Drehregler, Menüeintrag neben jedem Kürzel. Zu klären: welche Programme zuerst (Photoshop? Premiere? Finder?), sinnvolle Vorgaben je Programm, ob Drehregler mehr als Kürzel brauchen (z. B. Scrollen, Pinselgröße)
-- [ ] **Öffentlich auf GitHub** (2026-11-22). Vorbereitet: englische Oberfläche (String Catalog), `README.md` (EN) + `README.de.md`, `AGENTS.md` auf Englisch, `CLAUDE.md`, `ARCHITECTURE.md`, MIT-`LICENSE`. Offen:
+- [ ] **Öffentlich auf GitHub** (2026-11-22, öffentlich seit 2026-11-22). Vorbereitet: englische Oberfläche (String Catalog), `README.md` (EN) + `README.de.md`, `AGENTS.md` auf Englisch, `CLAUDE.md`, `ARCHITECTURE.md`, MIT-`LICENSE`. Offen:
   - [x] **Rechtlich:** Regler-Liste wird beim Start aus dem installierten Capture One gelesen (`controls.xml`, XMLParser), nicht mehr mitgeliefert. Geprüft: liefert dieselben 492 Einträge wie die alte JSON, 0 Unterschiede. Abgeleitete Dateien aus dem Repo genommen und in `.gitignore`
   - [x] Bundle-ID `MD.Stellwerk` → `at.martindoersch.Stellwerk` (**Martin:** Bedienungshilfen-Freigabe und Autostart neu setzen)
   - [x] README: „Developers only“, kein signierter Download
-  - [ ] Repo auf GitHub auf „Public" stellen, Beschreibung + Topics; Screenshot/GIF fürs README (vorher auf private Bilder prüfen)
+  - [x] Git-Verlauf bereinigt (abgeleitete Capture-One-Dateien aus allen Commits entfernt, Sicherung `../Stellwerk-vor-Bereinigung-2026-11-22.bundle`), Repo **öffentlich**, Beschreibung + Topics, GitHub erkennt MIT
+  - [ ] Screenshot/GIF fürs README (vorher auf private Bilder prüfen)
   - Optional später: signierte, notarisierte Version als Download (Developer ID, GitHub Releases)
 
 ## Erledigt
