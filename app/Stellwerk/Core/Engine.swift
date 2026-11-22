@@ -36,6 +36,15 @@ final class Engine {
     /// und das Einstellungsfenster müsste sonst jedes Mal neu zeichnen.
     @ObservationIgnored private var held: [DeviceID: Set<String>] = [:]
 
+    /// Auswahl „Taste wählt, was der Drehregler steuert" (Quick Keys). Gehalten gewinnt vor gewählt.
+    struct DialSelection {
+        var latched: String?        // kurz getippt → bleibt
+        var holding: String?        // gerade gehalten
+        var used = false            // beim Halten gedreht/zurückgesetzt → beim Loslassen nicht festhalten
+        var current: String? { holding ?? latched }
+    }
+    @ObservationIgnored private var selection: [DeviceID: DialSelection] = [:]
+
     // MARK: Zustand fürs Menü
     var hubState = TangentHub.State.starting
     var accessibilityOK = Accessibility.isTrusted
@@ -66,6 +75,7 @@ final class Engine {
     private(set) var catalog = Catalog()
     private let midi = MIDIInput(match: "Loupedeck")
     private let tourbox = TourBoxInput()
+    private let quickkeys = QuickKeysInput()
     private let hub = TangentHub()
     private let keys = KeyOutput()
     private let hud = HUD()
@@ -92,7 +102,10 @@ final class Engine {
                 self.requestStartValues()
             }
         }
-        hub.onValue = { [weak self] id, v, _ in self?.values[id] = v }
+        hub.onValue = { [weak self] id, v, _ in
+            self?.values[id] = v
+            self?.showQuickKeysValue(id)
+        }
         midi.onConnection = { [weak self] name in self?.devices[.loupedeck]?.connectedName = name }
         midi.onMessage = { [weak self] s, d1, d2 in self?.handleMIDI(status: s, d1, d2) }
         tourbox.onConnection = { [weak self] name in
@@ -101,10 +114,19 @@ final class Engine {
         }
         tourbox.onByte = { [weak self] b in self?.handleTourBox(b) }
         tourbox.onLog = { [weak self] in self?.log($0) }
+        quickkeys.onConnection = { [weak self] name in
+            self?.devices[.quickkeys]?.connectedName = name
+            if name == nil { self?.held[.quickkeys] = nil; self?.selection[.quickkeys] = nil }
+        }
+        quickkeys.onReady = { [weak self] in self?.refreshQuickKeys() }
+        quickkeys.onButton = { [weak self] i, down in self?.handleQuickKeys(button: i, down: down) }
+        quickkeys.onWheel = { [weak self] ticks in self?.handleQuickKeys(wheel: ticks) }
+        quickkeys.onLog = { [weak self] in self?.log($0) }
 
         hub.start()
         midi.start()
         tourbox.start()
+        quickkeys.start()
         Accessibility.request()
         startTapWhenTrusted()
         // Läuft Capture One? (für den Knopf „Capture One neu starten")
@@ -117,11 +139,17 @@ final class Engine {
         }
         updateActiveProfile(announce: false)
         ws.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.updateActiveProfile(announce: true) }
+            MainActor.assumeIsolated {
+                self?.updateActiveProfile(announce: true)
+                // Der Xencelabs-Treiber beschriftet das Display beim Programmwechsel womöglich selbst → neu schreiben
+                if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Self.captureOneBundleID {
+                    self?.refreshQuickKeys(force: true)
+                }
+            }
         }
         NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil,
                                                queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.keys.releaseAll(); self?.hub.stop(); self?.tourbox.stop() }
+            MainActor.assumeIsolated { self?.keys.releaseAll(); self?.hub.stop(); self?.tourbox.stop(); self?.quickkeys.stop() }
         }
     }
 
@@ -159,7 +187,9 @@ final class Engine {
         applySettings()
         keyMode = .stars
         bwActive = false
+        selection.removeAll()
         if hub.isConnected { requestStartValues() }
+        refreshQuickKeys(force: true)
     }
 
     /// Einstellungen auf alle Geräte anwenden
@@ -243,6 +273,7 @@ final class Engine {
         s.save()
         applySettings()
         updateActiveProfile(announce: false)
+        refreshQuickKeys()
     }
 
     // Tastenbelegung des bearbeiteten Geräts je Ebene (normal oder Fn) für das Einstellungsfenster
@@ -415,6 +446,20 @@ final class Engine {
         #endif
     }
 
+    /// Quick Keys: Tasten 0–9 (Bit der Tastenmaske), Rad ±1 pro Raste
+    private func handleQuickKeys(button i: Int, down: Bool) {
+        guard let name = device(.quickkeys).profile.nameByNote[i] else {
+            if down { log(String(localized: "Quick Keys Taste \(i): nicht angelernt")) }
+            return
+        }
+        if down { press(.quickkeys, name) } else { release(.quickkeys, name) }
+    }
+
+    private func handleQuickKeys(wheel ticks: Int) {
+        guard let name = device(.quickkeys).profile.dials.first else { return }
+        turn(.quickkeys, name, ticks: ticks)
+    }
+
     #if DEBUG
     /// Fehlersuche: jedes TourBox-Byte nach /tmp/stellwerk-tourbox.log
     @ObservationIgnored private lazy var traceFile: FileHandle? = {
@@ -431,11 +476,17 @@ final class Engine {
 
     // MARK: Router
 
-    /// Belegung eines Drehreglers in der gerade aktiven Ebene (Fn gehalten, Schwarzweiß)
+    /// Belegung eines Drehreglers in der gerade aktiven Ebene (Fn gehalten, per Taste gewählt, Schwarzweiß)
     private func dialBinding(_ dev: DeviceID, _ name: String) -> DialBinding? {
         let m = device(dev).mapping
         let fn = held[dev, default: []].contains(m.fnKey) ? m.fnDials[name] : nil
-        return fn ?? (bwActive ? m.bwDials[name] : nil) ?? m.dials[name]
+        let selected = name == m.dialSelect.dial ? selection[dev]?.current.flatMap { m.dialSelect.keys[$0]?.binding } : nil
+        return fn ?? selected ?? (bwActive ? m.bwDials[name] : nil) ?? m.dials[name]
+    }
+
+    /// Beim Halten einer Wahltaste wurde der Drehregler benutzt → beim Loslassen zurück zur vorigen Auswahl
+    private func markSelectionUsed(_ dev: DeviceID, _ name: String) {
+        if name == device(dev).mapping.dialSelect.dial, selection[dev]?.holding != nil { selection[dev]?.used = true }
     }
 
     func turn(_ dev: DeviceID, _ name: String, ticks: Int) {
@@ -453,6 +504,7 @@ final class Engine {
             lastAction = "\(controlLabel(name)): \(prettyKeys(k.text))"
             return
         }
+        markSelectionUsed(dev, name)
         guard let b = dialBinding(dev, name) else { log(notAssigned(name)); return }
         if let plus = b.plus, let minus = b.minus {   // Drehregler löst Aktionen aus
             let a = ticks > 0 ? plus : minus
@@ -504,6 +556,14 @@ final class Engine {
             return
         }
         let app = frontApp(dev)
+        // Taste wählt, was der Drehregler steuert – außer sie ist in den Einstellungen anders belegt
+        if m.dialSelect.keys[name] != nil, m.buttons[name] == nil, !fnHeld, app == nil {
+            selection[dev, default: DialSelection()].holding = name
+            selection[dev]?.used = false
+            selectionChanged(dev)
+            return
+        }
+        markSelectionUsed(dev, name)   // Drücken des Drehreglers (zurücksetzen) zählt als benutzt
         // Im Programmprofil sind die fünf Modus-Tasten frei belegbar, außer im Tasten-Modus (Shift/Ctrl/…)
         if let i = m.modeKeys.firstIndex(of: name), app == nil || keyMode == .modifiers {
             switch keyMode {
@@ -544,6 +604,62 @@ final class Engine {
     func release(_ dev: DeviceID, _ name: String) {
         held[dev, default: []].remove(name)
         if dev == .loupedeck, keys.realDown.contains(name) { keys.postReal(name, down: false) }
+        // Kurz getippt → Auswahl bleibt (nochmal tippen hebt sie auf); gehalten und gedreht → zurück zur vorigen
+        if var s = selection[dev], s.holding == name {
+            if !s.used { s.latched = s.latched == name ? nil : name }
+            s.holding = nil
+            selection[dev] = s
+            selectionChanged(dev)
+        }
+    }
+
+    // MARK: Quick-Keys-Display
+
+    /// Auswahl geändert: Ring färben, Display neu beschriften (bewusst ohne Einblendung – getestet, stört)
+    private func selectionChanged(_ dev: DeviceID) {
+        guard dev == .quickkeys else { return }
+        let m = device(dev).mapping
+        let choice = selection[dev]?.current.flatMap { m.dialSelect.keys[$0] }
+        quickkeys.ring(choice?.color ?? m.dialSelect.ring ?? 0xFFFFFF)
+        refreshQuickKeys()
+        if let p = choice?.binding.param { lastAction = catalog.name(p) }
+    }
+
+    /// Texte neben den Tasten: Kurzname + Wert; die gewählte Taste mit „>" davor
+    private func refreshQuickKeys(force: Bool = false) {
+        let d = device(.quickkeys), m = d.mapping
+        if force {
+            quickkeys.invalidate()
+            let choice = selection[.quickkeys]?.current.flatMap { m.dialSelect.keys[$0] }
+            quickkeys.ring(choice?.color ?? m.dialSelect.ring ?? 0xFFFFFF)
+        }
+        let current = selection[.quickkeys]?.current
+        for i in 0 ..< 8 {
+            guard let name = d.profile.nameByNote[i] else { continue }
+            var label = "", value = ""
+            if let b = m.buttons[name] {
+                label = describe(b)
+            } else if let c = m.dialSelect.keys[name] {
+                // Die Display-Schrift kennt kein ß (getestet: „Weiß" → „Wei")
+                label = controlLabel(c.label).replacingOccurrences(of: "ß", with: "ss")
+                if let p = c.binding.param, let v = values[p] { value = formatValue(v, p) }
+            }
+            let mark = name == current ? ">" : ""
+            let room = 8 - mark.count - value.count
+            let sep = !value.isEmpty && label.count < room ? " " : ""
+            quickkeys.setText(i, mark + label.prefix(max(0, room - sep.count)) + sep + value)
+        }
+    }
+
+    /// Neuer Wert aus Capture One: Display nachführen (bewusst ohne Einblendung – die verdeckt die Tastentexte)
+    private func showQuickKeysValue(_ id: UInt32) {
+        guard device(.quickkeys).mapping.dialSelect.keys.values.contains(where: { $0.binding.param == id }) else { return }
+        refreshQuickKeys()
+    }
+
+    /// Ganzzahlig bei Reglern mit Schritt ≥ 1 (Kelvin, Kontrast …), sonst zwei Nachkommastellen
+    private func formatValue(_ v: Float, _ p: UInt32) -> String {
+        String(format: (catalog.items[p]?.step ?? 1) >= 1 ? "%.0f" : "%.2f", v)
     }
 
     private func run(_ b: ButtonBinding, name: String) {

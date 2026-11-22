@@ -1,0 +1,26 @@
+{
+  "_hinweis": "Belegung Xencelabs Quick Keys → Capture One. Tasten T1–T8 wählen, was das Rad steuert: halten + drehen = nur solange gehalten, kurz tippen = bleibt gewählt, nochmal tippen = zurück zur Grundbelegung. Knopf im Rad setzt den gewählten Regler zurück. Display: label + Wert, Ring: color (RGB hex). Taste unten ist für Seiten reserviert.",
+  "app": "Capture One",
+  "acceleration": { "fastMs": 70, "fastFactor": 3, "mediumMs": 120, "mediumFactor": 2 },
+  "modifiers": { "fine": 0.2, "coarse": 4, "keyboard": true },
+  "fn": "Unten",
+  "dials": {
+    "Rad": { "plus": "0x8E", "minus": "0x8D", "_hinweis": "ohne Auswahl: rechts = nächstes, links = voriges Bild" }
+  },
+  "dialSelect": {
+    "dial": "Rad",
+    "ring": "C8F000",
+    "keys": {
+      "T1": { "param": "0x26",  "perTick": 0.05, "label": "Bel",  "color": "FFFFFF", "_hinweis": "Belichtung" },
+      "T2": { "param": "0x28",  "perTick": 2,    "label": "Kon",  "color": "FFFFFF", "_hinweis": "Kontrast" },
+      "T3": { "param": "0x2E",  "perTick": 2,    "label": "Lich", "color": "FFE080", "_hinweis": "Lichter" },
+      "T4": { "param": "0x30",  "perTick": 2,    "label": "Tief", "color": "4060FF", "_hinweis": "Tiefen" },
+      "T5": { "param": "0x250", "perTick": 2,    "label": "Weiß", "color": "FFE080", "_hinweis": "Weiß" },
+      "T6": { "param": "0x251", "perTick": 2,    "label": "Schw", "color": "4060FF", "_hinweis": "Schwarz" },
+      "T7": { "param": "0x01",  "perTick": 50,   "label": "K",    "color": "FF8000", "_hinweis": "Farbtemperatur (Kelvin)" },
+      "T8": { "param": "0x32",  "perTick": 2,    "label": "Klar", "color": "00C0FF", "_hinweis": "Klarheit" }
+    }
+  },
+  "buttons": {},
+  "fnButtons": {}
+}

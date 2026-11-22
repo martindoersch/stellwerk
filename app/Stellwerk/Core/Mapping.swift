@@ -232,6 +232,15 @@ enum Keys {
 // MARK: - Belegung
 
 struct DialBinding { var param: UInt32?; var perTick: Double; var plus: UInt32?; var minus: UInt32? }
+
+/// Tasten wählen, was ein Drehregler steuert (Quick Keys: T1–T8 → Rad). Mit Kurzname fürs Display und Ringfarbe.
+struct DialSelect {
+    struct Choice { var binding: DialBinding; var label: String; var color: UInt32? }
+    var dial: String?
+    var ring: UInt32?                    // Ringfarbe ohne Auswahl
+    var keys: [String: Choice] = [:]
+}
+
 struct Accel { var fastMs = 20.0, fastFactor = 4.0, mediumMs = 45.0, mediumFactor = 2.0 }
 
 /// Lesbare Form eines Tastenkürzels: "cmd+shift+z" → "⇧⌘Z"
@@ -282,6 +291,8 @@ struct Mapping {
     var bwToggle: String?
     var bwAction: UInt32?
     var bwDials: [String: DialBinding] = [:]
+
+    var dialSelect = DialSelect()
 
     var warnings: [String] = []
 
@@ -340,14 +351,28 @@ struct Mapping {
         bwAction = (bw["action"] as? String).flatMap(hexID)
         bwDials = dialsFrom(entries(bw["dials"]))
 
+        let sel = json["dialSelect"] as? [String: Any] ?? [:]
+        dialSelect.dial = sel["dial"] as? String
+        dialSelect.ring = (sel["ring"] as? String).flatMap(hexID)
+        let selKeys = entries(sel["keys"])
+        let selDials = dialsFrom(selKeys)
+        for (name, b) in selDials {
+            dialSelect.keys[name] = DialSelect.Choice(binding: b, label: selKeys[name]?["label"] as? String ?? name,
+                                                      color: (selKeys[name]?["color"] as? String).flatMap(hexID))
+        }
+
         // IDs gegen controls.xml prüfen
         guard !catalog.items.isEmpty else { return }
         let buttonIDs = (Array(buttons.values) + Array(fnButtons.values)).compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
-        let dialIDs = (Array(dials.values) + Array(fnDials.values) + Array(bwDials.values)).flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
+        let dialIDs = (Array(dials.values) + Array(fnDials.values) + Array(bwDials.values) + Array(selDials.values))
+            .flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
         let all = Set(dialIDs + buttonIDs + starIDs + colorIDs + [starsClear, colorsClear, bwAction].compactMap { $0 })
         for id in all where catalog.items[id] == nil { warnings.append(String(localized: "\(hexStr(id)) steht nicht in controls.xml")) }
     }
 
     /// Alle Regler-IDs, deren Startwert wir abfragen
-    var allParams: Set<UInt32> { Set((Array(dials.values) + Array(fnDials.values) + Array(bwDials.values)).compactMap(\.param)) }
+    var allParams: Set<UInt32> {
+        Set((Array(dials.values) + Array(fnDials.values) + Array(bwDials.values) + dialSelect.keys.values.map(\.binding))
+            .compactMap(\.param))
+    }
 }

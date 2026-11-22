@@ -1016,6 +1016,26 @@
         }
       }
     },
+    "Quick Keys Taste %lld: nicht angelernt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Keys key %lld: not learned"
+          }
+        }
+      }
+    },
+    "Quick Keys: Senden fehlgeschlagen (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Keys: sending failed (%@)"
+          }
+        }
+      }
+    },
     "Schwarzweiß" : {
       "localizations" : {
         "en" : {

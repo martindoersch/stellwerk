@@ -70,6 +70,16 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Haptik/Feedback der Elite nutzen, falls das Protokoll es hergibt
 - [ ] Fallback: TourBox Console sendet Tastenkürzel → Bridge übersetzt
 
+## Phase 3b — Xencelabs Quick Keys
+
+- [x] Protokoll (2026-11-22): HID über den Funk-Dongle, ohne Treiber. Mitschreiber `bridge/quickkeys_monitor.swift`, Codes bestätigt: Tasten 0–7, 8 = unten, 9 = Rad-Knopf, Rad 1 Meldung/Raste. Display-Texte, Einblendung (braucht `05` + `06`-Block) und Ringfarbe funktionieren → `docs/quickkeys-protokoll.md`
+- [x] In der App (2026-11-22): `QuickKeysInput`, Geräte- und Belegungsdatei. Neu im Kern: `dialSelect` – Tasten wählen, was das Rad steuert (halten + drehen = vorübergehend, tippen = bleibt, nochmal tippen = aufheben), Rad-Knopf = zurücksetzen. Display zeigt Kurzname + Wert aus Capture One, gewählte Taste mit „>", Ringfarbe je Regler. Ohne Auswahl: Rad = Bild vor/zurück. Baut ohne Warnungen
+- [x] Von Martin getestet ✅ (2026-11-22): Wahl per Halten/Tippen „fühlt sich richtig an", Schrittweiten passen. Einblendung beim Drehen störte → entfernt, die Werte neben den Tasten reichen. Einblendung beim Wählen störte ebenfalls → ganz weg (Wahl sieht man am „>" und an der Ringfarbe). **Display-Schrift kennt kein ß** („Weiß" → „Wei") → wird als „ss" geschrieben; Umlaute ungetestet
+- [ ] Parallel zum Xencelabs-Treiber (Tablett): Quick-Keys-Tasten dort deaktivieren, prüfen ob der Treiber das Display überschreibt (Stellwerk schreibt beim Wechsel zu Capture One neu)
+- [ ] **Seiten/Ebenen** allgemein im Kern (für alle Geräte): Taste „nächste Seite"/„Seite X". Quick Keys: Taste unten (derzeit Kombi-Taste wie Fn, ohne Belegung), Loupedeck: Custom Mode
+- [ ] Einstellungsfenster: Wahltasten (`dialSelect`) dort sichtbar machen und bearbeiten
+- [ ] Akkustand im Statusmenü anzeigen (`F2 01`)
+
 ## Phase 4 — Menüleisten-App (Swift)
 
 - [x] **Version 0.1** (2026-11-21): Xcode-Projekt `app/`, Prototyp portiert (MIDI, Tangent-Hub, Menü-Kürzel, Modus-Tasten, SW-Ebene, Modifier + Event-Tap, Fein/Grob, Beschleunigung). Statusmenü: Verbindungen, Bedienungshilfen, Modus, Belichtung, letzte Aktion, Belegung neu laden, Ordner, Autostart. Baut ohne Warnungen

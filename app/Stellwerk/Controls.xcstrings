@@ -13,6 +13,18 @@
         }
       }
     },
+    "Bel": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exp"
+          }
+        }
+      }
+    },
     "Control Dial (großes Rad)": {
       "comment": "Name of a hardware control (from the device file)",
       "extractionState": "manual",
@@ -121,6 +133,42 @@
         }
       }
     },
+    "Klar": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clar"
+          }
+        }
+      }
+    },
+    "Kon": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con"
+          }
+        }
+      }
+    },
+    "Lich": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High"
+          }
+        }
+      }
+    },
     "Pfeil links": {
       "comment": "Name of a hardware control (from the device file)",
       "extractionState": "manual",
@@ -165,6 +213,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Arrow down"
+          }
+        }
+      }
+    },
+    "Rad": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wheel"
+          }
+        }
+      }
+    },
+    "Schw": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blks"
+          }
+        }
+      }
+    },
+    "Tief": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shad"
+          }
+        }
+      }
+    },
+    "Unten": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom"
+          }
+        }
+      }
+    },
+    "Weiß": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whts"
           }
         }
       }

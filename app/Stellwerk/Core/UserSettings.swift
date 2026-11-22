@@ -6,6 +6,7 @@ import Foundation
 enum DeviceID: String, CaseIterable, Codable, Hashable {
     case loupedeck = "loupedeck-plus"
     case tourbox = "tourbox-elite-plus"
+    case quickkeys = "xencelabs-quick-keys"
 
     var profileFile: String { rawValue + ".json" }              // Gerät: Signal → Beschriftung
     var mappingFile: String { rawValue + "-captureone.json" }   // Belegung für Capture One
