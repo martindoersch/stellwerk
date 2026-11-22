@@ -192,7 +192,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = MD.Stellwerk;
+				PRODUCT_BUNDLE_IDENTIFIER = at.martindoersch.Stellwerk;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -222,7 +222,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = MD.Stellwerk;
+				PRODUCT_BUNDLE_IDENTIFIER = at.martindoersch.Stellwerk;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

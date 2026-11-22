@@ -33,8 +33,8 @@ Software surface┘                                    └─ Photomator (planne
 | `bridge/fake_captureone.py` | Test client that pretends to be Capture One |
 | `bridge/midi_monitor.swift`, `bridge/tourbox_monitor.swift` | Raw data loggers for new hardware |
 | `bridge/learn_loupedeck.swift` | Guided learning of Loupedeck+ controls with voice prompts |
-| `bridge/parse_controls.py` | Parses Capture One's `controls.xml` → `docs/capture-one-controls.md` + JSON catalog. Re-run after Capture One updates and check `git diff` for changed IDs |
-| `docs/` | Capture One control list, TourBox USB protocol |
+| `bridge/parse_controls.py` | Parses Capture One's `controls.xml` → `docs/capture-one-controls.md` (lookup table) + `bridge/mappings/capture-one-controls.json` (prototype). **Both are generated locally and git-ignored**: the data belongs to Capture One and must not be committed |
+| `docs/` | TourBox USB protocol (+ the locally generated Capture One table) |
 
 ## Build, run, test
 
@@ -73,7 +73,7 @@ Software surface┘                                    └─ Photomator (planne
 - Capture One connects as a client to `127.0.0.1:64246` (normally the Tangent Hub). **Stellwerk plays the hub.** Capture One registers with `ApplicationDefinition` and answers value requests.
 - Connects **only at launch** and reads the Tangent switch only at launch; no reconnect, no AppleScript hook. Restart is the only way.
 - Enable: `defaults write com.captureone.captureone16 TangentDeviceSupportEnableDefaultsKey -bool true` (visible in Capture One settings).
-- Control list: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml` (63 parameters, 429 actions, one mode "Default"). Same folder has Tangent's default maps (`element-*-map.xml`, `wave-map.xml`, `ripple-map.xml`), useful as layout templates.
+- Control list: `/Applications/Capture One.app/Contents/Resources/TangentSettings/controls.xml` (63 parameters, 429 actions, one mode "Default"). **The app reads it at launch from the installed Capture One** (`Catalog.fromInstalledCaptureOne`, located via bundle ID), so IDs stay current after updates and no vendor data is shipped. Fallback: a `capture-one-controls.json` in the user mappings folder. Same folder has Tangent's default maps (`element-*-map.xml`, `wave-map.xml`, `ripple-map.xml`), useful as layout templates.
 - Key IDs: exposure `0x26`, Kelvin `0x01`, tint `0x03`, contrast `0x28`, saturation `0x2C`, highlights `0x2E`, shadows `0x30`, white `0x250`, black `0x251`, clarity `0x32`, structure `0x33`. Actions: next/prev image `0x8E`/`0x8D`, stars 0–5 `0x106`, `0x101`–`0x105`, color tags `0x107`–`0x10E`, reset `0x112`, copy/apply adjustments `0xFC`/`0xFD`, before/after `0x252`, auto `0x111`, zoom fit/100 % `0xC4`/`0xC5`.
 - **Undo/Redo (`0x77`/`0x78`) have no effect** → Stellwerk clicks the matching menu item via the Accessibility API (language-independent), keystroke as fallback. Paste `0xFD` opened a dialog and hung → menu ⇧⌘V.
 - Wire format: big endian, message = `uint32 length` + body; body = `uint32 command` + data; strings = `uint32 length` + bytes.

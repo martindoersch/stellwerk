@@ -87,12 +87,67 @@ struct Catalog {
         }
     }
 
+    /// Liest die Regler-Liste direkt aus dem installierten Capture One
+    /// (`…/Contents/Resources/TangentSettings/controls.xml`). Die Liste gehört Capture One
+    /// und wird deshalb nicht mitgeliefert. `nil`, wenn Capture One fehlt.
+    static func fromInstalledCaptureOne(bundleID: String) -> Catalog? {
+        let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
+            ?? URL(fileURLWithPath: "/Applications/Capture One.app")
+        let xml = app.appendingPathComponent("Contents/Resources/TangentSettings/controls.xml")
+        guard let parser = XMLParser(contentsOf: xml) else { return nil }
+        let reader = ControlsXMLReader()
+        parser.delegate = reader
+        guard parser.parse(), !reader.groups.isEmpty else { return nil }
+        return Catalog(json: ["groups": reader.groups])
+    }
+
     func name(_ id: UInt32) -> String { items[id]?.name ?? hexStr(id) }
 
     /// Alle auslösbaren Aktionen (keine Regler), nach Gruppe und Name sortiert
     var actions: [(id: UInt32, control: C1Control)] {
         items.filter { !$0.value.isParam }.map { (id: $0.key, control: $0.value) }
             .sorted { ($0.control.group, $0.control.name) < ($1.control.group, $1.control.name) }
+    }
+}
+
+/// Übersetzt `controls.xml` in dieselbe Struktur wie `bridge/parse_controls.py`:
+/// `[{name, items: [{id, name, kind, step}]}]`. Nur `Controls/Group/(Parameter|Action)` zählt.
+private final class ControlsXMLReader: NSObject, XMLParserDelegate {
+    var groups: [[String: Any]] = []
+    private var inControls = false
+    private var group: [String: Any]?
+    private var item: [String: Any]?
+    private var text = ""
+
+    func parser(_ parser: XMLParser, didStartElement element: String, namespaceURI: String?,
+                qualifiedName: String?, attributes: [String: String]) {
+        text = ""
+        switch element {
+        case "Controls": inControls = true
+        case "Group" where inControls: group = ["name": attributes["name"] ?? "", "items": [[String: Any]]()]
+        case "Parameter" where group != nil, "Action" where group != nil:
+            item = ["id": attributes["id"] ?? "", "kind": element == "Parameter" ? "parameter" : "action"]
+        default: break
+        }
+    }
+
+    func parser(_ parser: XMLParser, foundCharacters string: String) { text += string }
+
+    func parser(_ parser: XMLParser, didEndElement element: String, namespaceURI: String?, qualifiedName: String?) {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch element {
+        case "Name" where item != nil: item?["name"] = value
+        case "StepSize" where item != nil: item?["step"] = Double(value)
+        case "Parameter", "Action":
+            if let i = item, var g = group { g["items"] = (g["items"] as? [[String: Any]] ?? []) + [i]; group = g }
+            item = nil
+        case "Group":
+            if let g = group { groups.append(g) }
+            group = nil
+        case "Controls": inControls = false
+        default: break
+        }
+        text = ""
     }
 }
 

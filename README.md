@@ -26,17 +26,17 @@ Named after the railway *Stellwerk* (signal box): many levers set many switches,
 
 Planned: Lightroom Classic, Photomator, TourBox over Bluetooth, a web/touch surface for iPad. See [ARCHITECTURE.md](ARCHITECTURE.md) and [TASKS.md](TASKS.md) (German).
 
-> **Status:** early, built for one person's desk and tested there. Expect rough edges.
+> **⚠️ Developers only.** There is no signed or notarized download. You build Stellwerk yourself in Xcode (a free Apple ID is enough). It's early, built for one person's desk and tested there. Expect rough edges.
 
 ## Requirements
 
 - macOS 26.5 or later, Xcode 26.5 or later
-- Capture One (Mac) for the Tangent connection
+- Capture One (Mac) for the Tangent connection. Stellwerk reads Capture One's control list (`TangentSettings/controls.xml`) from the installed app at launch; it is not shipped with Stellwerk.
 - **Do not install the Tangent Hub.** It uses the same port (`127.0.0.1:64246`) that Stellwerk listens on.
 
-## Install (build from source)
+## Install (build from source, developers only)
 
-There is no signed download yet, so you build it yourself. It takes a few minutes.
+There is no signed download, so you build it yourself. It takes a few minutes if you've used Xcode before.
 
 1. Clone the repo and open `app/Stellwerk.xcodeproj` in Xcode.
 2. Target *Stellwerk* → *Signing & Capabilities*: pick your own team (a free Apple ID works) and change the bundle identifier to something of yours, e.g. `com.yourname.Stellwerk`.
@@ -72,7 +72,7 @@ Stellwerk was built with coding agents (Claude Code, OpenCode) in Xcode, and the
 | [`CLAUDE.md`](CLAUDE.md) | Claude Code | Just points to `AGENTS.md`, so there's one source |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Everyone | Layers, data model, how adapters plug in |
 | [`TASKS.md`](TASKS.md) | Agents and you | Roadmap and log of what was tried and verified (German) |
-| `docs/` | Reference | Capture One control list, TourBox USB protocol |
+| `docs/` | Reference | TourBox USB protocol. Generate the Capture One control table locally with `python3 bridge/parse_controls.py` |
 
 **The workflow:**
 

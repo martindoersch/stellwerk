@@ -6,10 +6,11 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 
 - [ ] **Programmprofile ausbauen und im Alltag testen.** Grundlage steht: Modus „Im aktiven Programm“, Profile pro Gerät, Kürzel für Tasten und Drehregler, Menüeintrag neben jedem Kürzel. Zu klären: welche Programme zuerst (Photoshop? Premiere? Finder?), sinnvolle Vorgaben je Programm, ob Drehregler mehr als Kürzel brauchen (z. B. Scrollen, Pinselgröße)
 - [ ] **Öffentlich auf GitHub** (2026-11-22). Vorbereitet: englische Oberfläche (String Catalog), `README.md` (EN) + `README.de.md`, `AGENTS.md` auf Englisch, `CLAUDE.md`, `ARCHITECTURE.md`, MIT-`LICENSE`. Offen:
-  - **Rechtlich:** `capture-one-controls.json` (in der App) und `docs/capture-one-controls.md` sind aus Capture Ones `controls.xml` abgeleitet. Sicherer: nicht mitliefern, sondern beim Start aus der installierten Capture-One-App einlesen (siehe Risiken unten), dann beide Dateien aus dem Repo nehmen
-  - Bundle-ID `MD.Stellwerk` → z. B. `at.martindoersch.Stellwerk`
-  - Repo auf GitHub auf „Public" stellen, Beschreibung + Topics, Screenshot/GIF fürs README (vorher auf private Bilder prüfen)
-  - Optional: signierte, notarisierte Version als Download (Developer ID, GitHub Releases)
+  - [x] **Rechtlich:** Regler-Liste wird beim Start aus dem installierten Capture One gelesen (`controls.xml`, XMLParser), nicht mehr mitgeliefert. Geprüft: liefert dieselben 492 Einträge wie die alte JSON, 0 Unterschiede. Abgeleitete Dateien aus dem Repo genommen und in `.gitignore`
+  - [x] Bundle-ID `MD.Stellwerk` → `at.martindoersch.Stellwerk` (**Martin:** Bedienungshilfen-Freigabe und Autostart neu setzen)
+  - [x] README: „Developers only“, kein signierter Download
+  - [ ] Repo auf GitHub auf „Public" stellen, Beschreibung + Topics; Screenshot/GIF fürs README (vorher auf private Bilder prüfen)
+  - Optional später: signierte, notarisierte Version als Download (Developer ID, GitHub Releases)
 
 ## Erledigt
 
@@ -118,7 +119,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Offene Fragen / Risiken
 
 - Loupedeck+ wird von der aktuellen Logi-Software eventuell nicht mehr unterstützt; das ist egal, solange MIDI funktioniert
-- Capture-One-Updates könnten Parameter-IDs ändern → `controls.xml` beim Start einlesen statt fest einzubauen
+- [x] ~~Capture-One-Updates könnten Parameter-IDs ändern~~ → `controls.xml` wird seit 2026-11-22 beim Start eingelesen
 - Ein später installierter Tangent Hub kollidiert mit Port 64246
 
 ## Werkverzeichnis

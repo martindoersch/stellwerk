@@ -15,6 +15,8 @@ Name nach dem Bahn-Stellwerk: viele Hebel stellen viele Weichen, zentral verscha
 
 ## Installieren
 
+> **⚠️ Nur für Entwickler:innen.** Es gibt keine signierte Version zum Herunterladen. Stellwerk wird selbst in Xcode gebaut (eine kostenlose Apple-ID reicht).
+
 Selbst bauen mit Xcode (macOS 26.5 oder neuer):
 
 1. `app/Stellwerk.xcodeproj` öffnen, unter *Signing & Capabilities* eigenes Team und eigene Bundle-ID eintragen

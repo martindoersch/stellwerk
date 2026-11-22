@@ -4,3 +4,7 @@ __pycache__/
 .build/
 xcuserdata/
 DerivedData/
+
+# Aus Capture Ones controls.xml abgeleitet (gehört Capture One) – nur lokal erzeugen: python3 bridge/parse_controls.py
+docs/capture-one-controls.md
+bridge/mappings/capture-one-controls.json

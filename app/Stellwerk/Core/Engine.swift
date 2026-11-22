@@ -19,7 +19,7 @@ final class Engine {
     }
 
     static let captureOneBundleID = "com.captureone.captureone16"
-    static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile] } + ["capture-one-controls.json"]
+    static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile] }
 
     /// Ein Gerät mit seinen Belegungsdaten und Laufzeit-Zustand
     struct Device {
@@ -142,8 +142,11 @@ final class Engine {
 
     func loadMappings() {
         warnings.removeAll()
-        if let c = MappingStore.load("capture-one-controls.json") { catalog = Catalog(json: c) }
-        else { warnings.append(String(localized: "capture-one-controls.json fehlt")) }
+        // Regler-Liste aus dem installierten Capture One; eine eigene JSON (parse_controls.py)
+        // im Benutzerordner dient nur als Ausweg, wenn Capture One woanders liegt.
+        if let c = Catalog.fromInstalledCaptureOne(bundleID: Self.captureOneBundleID) { catalog = c }
+        else if let c = MappingStore.load("capture-one-controls.json") { catalog = Catalog(json: c) }
+        else { warnings.append(String(localized: "Capture One nicht gefunden – Regler-Liste fehlt")) }
         for id in DeviceID.allCases {
             var d = device(id)
             if let p = MappingStore.load(id.profileFile) { d.profile = DeviceProfile(json: p) }
