@@ -2,6 +2,7 @@
 // meldet sich am Gerät an und zeigt Rohdaten + gedeutete Ereignisse. Schreibt zum Test Texte ins Display.
 // Start: swift quickkeys_monitor.swift          → anmelden und mitschreiben
 //        swift quickkeys_monitor.swift list     → nur Schnittstellen auflisten
+//        swift quickkeys_monitor.swift texte "█▓▒░" "äöü" …   → eigene Texte für Taste 0–7 (Schrift testen)
 // Den Xencelabs-Treiber vorher beenden – er spricht sonst dazwischen.
 // Protokoll-Quelle: Julusian/node-xencelabs-quick-keys (packages/core: device.ts, wireless-device.ts)
 // Hinweis: macOS liefert die Report-ID (0x02) als Byte 0 mit, die Offsets hier sind daher um 1 größer als in node.
@@ -13,6 +14,7 @@ setvbuf(stdout, nil, _IOLBF, 0)   // zeilenweise ausgeben, auch durch „| tee"
 let vendorID = 0x28BD
 let wiredPID = 0x5202, wirelessPID = 0x5203
 let listOnly = CommandLine.arguments.dropFirst().first == "list"
+let customTexts = CommandLine.arguments.dropFirst().first == "texte" ? Array(CommandLine.arguments.dropFirst(2)) : []
 let start = Date()
 
 func prop(_ d: IOHIDDevice, _ key: String) -> Int { (IOHIDDeviceGetProperty(d, key as CFString) as? Int) ?? -1 }
@@ -57,7 +59,7 @@ func overlay(_ d: IOHIDDevice, _ text: String, seconds: UInt8, id: [UInt8]?) {
 func hello(_ d: IOHIDDevice, id: [UInt8]?) {
     send(d, report([1: 0xB0, 2: 0x04], id: id), "Ereignisse abonnieren")
     send(d, report([1: 0xB4, 2: 0x10], id: id), "Akku abonnieren")
-    for k in 0..<8 { keyText(d, key: k, "Taste \(k)", id: id) }
+    for k in 0..<8 { keyText(d, key: k, customTexts[safe: k] ?? "Taste \(k)", id: id) }
     send(d, report([1: 0xB4, 2: 0x01, 3: 0x01, 6: 0xC8, 7: 0xF0, 8: 0x00], id: id), "Ring lime")
     overlay(d, "Stellwerk verbunden", seconds: 5, id: id)
 }
@@ -133,3 +135,5 @@ for d in targets {
 
 print("\nTasten drücken, Rad drehen (Ctrl+C beendet)")
 CFRunLoopRun()
+
+extension Array { subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil } }

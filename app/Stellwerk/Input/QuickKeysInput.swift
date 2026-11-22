@@ -9,6 +9,7 @@ final class QuickKeysInput {
     var onWheel: ((Int) -> Void)?              // +1 = rechts, −1 = links
     var onConnection: ((String?) -> Void)?     // Gerätename oder nil
     var onReady: (() -> Void)?                 // angemeldet → Display neu beschriften
+    var onBattery: ((Int) -> Void)?            // Akkustand in Prozent
     var onLog: ((String) -> Void)?
 
     static let vendorID = 0x28BD
@@ -110,6 +111,8 @@ final class QuickKeysInput {
             let changed = now ^ buttons
             buttons = now
             for i in 0 ..< 10 where changed & (1 << i) != 0 { onButton?(i, now & (1 << i) != 0) }
+        case 0xF2 where r[2] == 0x01:   // Akku (nach dem Abonnieren und bei Änderung)
+            onBattery?(Int(r[3]))
         default: break
         }
     }

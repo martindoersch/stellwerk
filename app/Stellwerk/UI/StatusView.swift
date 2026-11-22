@@ -9,19 +9,23 @@ struct StatusView: View {
     @Bindable var engine: Engine
     @Environment(\.openWindow) private var openWindow
 
+    /// „0.4" aus MARKETING_VERSION (Xcode-Projekt)
+    private static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Stellwerk").font(.headline)
+                Text(verbatim: Self.version).font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text("Loupedeck+ · TourBox → Capture One").font(.caption).foregroundStyle(.secondary)
             }
 
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(DeviceID.allCases, id: \.self) { id in
                     let d = engine.device(id)
                     StatusRow(ok: d.connectedName != nil, warn: true, title: d.name,
-                              detail: d.connectedName != nil ? String(localized: "verbunden") : String(localized: "nicht angeschlossen"))
+                              detail: d.connectedName == nil ? String(localized: "nicht angeschlossen")
+                                  : String(localized: "verbunden") + (d.battery.map { " · \($0) %" } ?? ""))
                 }
                 StatusRow(ok: engine.hubState.isConnected, warn: !engine.hubState.isFailed,
                           title: "Capture One", detail: hubText)

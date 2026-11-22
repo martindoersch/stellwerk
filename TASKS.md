@@ -78,7 +78,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Parallel zum Xencelabs-Treiber (Tablett): Quick-Keys-Tasten dort deaktivieren, prüfen ob der Treiber das Display überschreibt (Stellwerk schreibt beim Wechsel zu Capture One neu)
 - [ ] **Seiten/Ebenen** allgemein im Kern (für alle Geräte): Taste „nächste Seite"/„Seite X". Quick Keys: Taste unten (derzeit Kombi-Taste wie Fn, ohne Belegung), Loupedeck: Custom Mode
 - [ ] Einstellungsfenster: Wahltasten (`dialSelect`) dort sichtbar machen und bearbeiten
-- [ ] Akkustand im Statusmenü anzeigen (`F2 01`)
+- [x] Akkustand im Statusmenü neben „verbunden" (2026-11-22, `F2 01`). Balken im Display geht nicht: kein Pixelzugriff, nur Textfelder und Einblendung
 
 ## Phase 4 — Menüleisten-App (Swift)
 
@@ -86,6 +86,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] v0.1 von Martin getestet ✅ (2026-11-21): läuft mit Loupedeck+ und Capture One
 - [x] **Version 0.2** (2026-11-21): Einstellungsfenster. *Drehregler:* Geschwindigkeit, Beschleunigung (0 = aus), Fein/Grob-Faktoren. *Tasten:* jede Taste auf Vorgabe / Capture-One-Aktion (Suchliste) / eigenes Tastenkürzel (Aufnahme) / aus. Gespeichert als Überlagerung in `~/Library/Application Support/Stellwerk/settings.json`, Vorgabe bleibt unangetastet
 - [x] **Version 0.3** (2026-11-21): Einblendung beim Moduswechsel (Sterne/Farben/Tasten, Schwarzweiß/Farbbalance), unten mittig auf dem Bildschirm mit der Maus, ohne Fokusklau; abschaltbar im neuen Reiter „Allgemein" (dort auch Autostart, Belegungsordner)
+- [x] **Version 0.4** (2026-11-22): Xencelabs Quick Keys (Phase 3b). Versionsnummer klein neben dem Namen im Statusmenü (aus `MARKETING_VERSION`, bisher stand dort noch 0.1)
 - [x] Absturz beim Moduswechsel behoben: NSHostingView steuerte die Fenstergröße der Einblendung → Layout-Schleife (`sizingOptions = []`). Nachgestellt und geprüft mit `bridge/fake_loupedeck.swift`
 - [x] Neu verbinden ohne Neustart geprüft (2026-11-21): **geht nicht.** Capture One verbindet nicht von selbst (20 s gewartet), reagiert nicht auf `defaults write` des Tangent-Schalters, und der Schalter in den Einstellungen verlangt selbst einen Neustart. Kein Tangent im AppleScript-Wörterbuch → Neustart ist der einzige Weg
 - [x] Sicherheit: Hub lauschte auf allen Schnittstellen (`*:64246`, also im WLAN erreichbar), obwohl `requiredInterfaceType = .loopback` gesetzt war → jetzt fest an `127.0.0.1` gebunden (App und Prototyp)

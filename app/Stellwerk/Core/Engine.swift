@@ -29,6 +29,7 @@ final class Engine {
         var mapping = Mapping()                   // wirksame Belegung (Vorgabe + Einstellungen)
         var appMappings: [String: AppMapping] = [:]   // Programmprofile nach Bundle-ID
         var connectedName: String?
+        var battery: Int?                         // Akkustand in Prozent, falls das Gerät ihn meldet
         var name: String { profile.device }
     }
 
@@ -116,8 +117,9 @@ final class Engine {
         tourbox.onLog = { [weak self] in self?.log($0) }
         quickkeys.onConnection = { [weak self] name in
             self?.devices[.quickkeys]?.connectedName = name
-            if name == nil { self?.held[.quickkeys] = nil; self?.selection[.quickkeys] = nil }
+            if name == nil { self?.held[.quickkeys] = nil; self?.selection[.quickkeys] = nil; self?.devices[.quickkeys]?.battery = nil }
         }
+        quickkeys.onBattery = { [weak self] percent in self?.devices[.quickkeys]?.battery = percent }
         quickkeys.onReady = { [weak self] in self?.refreshQuickKeys() }
         quickkeys.onButton = { [weak self] i, down in self?.handleQuickKeys(button: i, down: down) }
         quickkeys.onWheel = { [weak self] ticks in self?.handleQuickKeys(wheel: ticks) }
