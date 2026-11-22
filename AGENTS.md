@@ -25,6 +25,7 @@ Software surface┘                                    └─ Photomator (on hol
 |---|---|
 | `app/` | **Menu bar app**, Xcode project `Stellwerk.xcodeproj`, no sandbox. `Core/` (Engine, Mapping, UserSettings), `Input/` (MIDI, TourBox serial), `Output/` (Tangent hub, keys/menu items/event tap), `UI/` (status menu, settings, HUD) |
 | `app/Stellwerk/Mappings/` | Default device profiles and mappings (JSON, bundled). Users override them in `~/Library/Application Support/Stellwerk/Mappings/`; settings overlay in `…/Stellwerk/settings.json` |
+| `app/Stellwerk/Mappings/app-profiles.json` | Presets for app profiles (shortcuts only, per device; e.g. Finder). Copied into `settings.json` when the user adds that app; `labels`/`fnLabels` = Quick Keys display names (max. 8 chars), also add them to `Controls.xcstrings` |
 | `app/Stellwerk/Localizable.xcstrings` | UI strings. **Source language is German** (keys are German text), English translations alongside |
 | `app/Stellwerk/Controls.xcstrings` | Display names for device control names (the names themselves are keys in JSON and must not change) |
 | `app/Stellwerk/Stellwerk.icon` | App icon (Icon Composer), ⌥ glyph on lime |
@@ -65,7 +66,7 @@ Software surface┘                                    └─ Photomator (on hol
 |---|---|---|
 | Loupedeck+ | USB, appears as **MIDI device** | Channel 1. Turning = relative CC (`01` = +1, `7F` = −1), pressing = note with the same number. CCs 33–48 + 1–8 (color dials). Top dials send ~3× more steps than color dials → step size per dial. No Logi software needed |
 | TourBox Elite Plus | **USB serial** (CDC), 115200 8N1 | Sends nothing until unlocked: `55 00 07 88 94 00 1A FE`, wait 300 ms, then a 94-byte config. One byte per event, bit 7 = release, bit 6 = direction. Details (German): `docs/tourbox-protokoll.md`. TourBox Console must be quit. BLE not done yet |
-| Xencelabs Quick Keys | **HID**, via its wireless dongle (`0x28BD:0x5203`) or cable (`0x5202`), vendor interface usage page `0xFF0A` | 32-byte reports, report ID 2. Dongle: query devices (`B8 01`), then subscribe (`B0 04`) with the device ID in bytes 10–15 of every report. Keys = bitmask (0–7 display keys, 8 = bottom, 9 = wheel button), wheel = one report per detent. Writable: 8-char text per key (font has no ß), overlay (always send a `06` chunk after `05`), ring colour. Details (German): `docs/quickkeys-protokoll.md`. The Xencelabs driver (needed for the tablet) reads in parallel → disable the Quick Keys keys there |
+| Xencelabs Quick Keys | **HID**, via its wireless dongle (`0x28BD:0x5203`) or cable (`0x5202`), vendor interface usage page `0xFF0A` | 32-byte reports, report ID 2. Dongle: query devices (`B8 01`), then subscribe (`B0 04`) with the device ID in bytes 10–15 of every report. Keys = bitmask (0–7 display keys, 8 = bottom, 9 = wheel button), wheel = one report per detent. Writable: 8-char text per key (font has no ß and no umlauts: „Öffnen" shows as „Offnen"), overlay (always send a `06` chunk after `05`), ring colour. Details (German): `docs/quickkeys-protokoll.md`. The Xencelabs driver (needed for the tablet) reads in parallel → disable the Quick Keys keys there |
 | Tangent panels | not supported as input | Don't install the Tangent Hub: it occupies port 64246 |
 
 ## App interfaces (findings)

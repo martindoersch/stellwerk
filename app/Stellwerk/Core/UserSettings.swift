@@ -44,6 +44,22 @@ struct AppBindings: Codable, Equatable {
     var buttons: [String: String] = [:]     // Taste → Kürzel, z. B. "cmd+z"
     var fnButtons: [String: String] = [:]
     var dials: [String: DialKeys] = [:]
+    var labels: [String: String]?           // Kurznamen fürs Quick-Keys-Display (aus der Vorgabe)
+    var fnLabels: [String: String]?
+
+    init(buttons: [String: String] = [:], fnButtons: [String: String] = [:], dials: [String: DialKeys] = [:]) {
+        self.buttons = buttons; self.fnButtons = fnButtons; self.dials = dials
+    }
+
+    // Fehlende Abschnitte (z. B. kein fnButtons in der Vorgabe) → leer statt Fehler
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        buttons = try c.decodeIfPresent([String: String].self, forKey: .buttons) ?? [:]
+        fnButtons = try c.decodeIfPresent([String: String].self, forKey: .fnButtons) ?? [:]
+        dials = try c.decodeIfPresent([String: DialKeys].self, forKey: .dials) ?? [:]
+        labels = try c.decodeIfPresent([String: String].self, forKey: .labels)
+        fnLabels = try c.decodeIfPresent([String: String].self, forKey: .fnLabels)
+    }
 }
 
 /// Belegung für ein anderes Programm als Capture One, je Gerät
@@ -78,6 +94,21 @@ struct AppProfile: Codable, Equatable, Identifiable {
                 fnButtons: try l.decodeIfPresent([String: String].self, forKey: .fnButtons) ?? [:],
                 dials: try l.decodeIfPresent([String: DialKeys].self, forKey: .dials) ?? [:])
         }
+    }
+
+    static let defaultsFile = "app-profiles.json"
+
+    /// Mitgelieferte Vorgaben (app-profiles.json). Hinweistexte werden vorher entfernt,
+    /// sonst scheitert das Lesen der Drehregler. nil = Datei fehlt oder ist ungültig.
+    static func loadDefaults() -> [AppProfile]? {
+        func strip(_ v: Any) -> Any {
+            if let d = v as? [String: Any] { return d.filter { $0.key != "_hinweis" }.mapValues(strip) }
+            if let a = v as? [Any] { return a.map(strip) }
+            return v
+        }
+        guard let json = MappingStore.load(defaultsFile), let list = json["profiles"],
+              let data = try? JSONSerialization.data(withJSONObject: strip(list)) else { return nil }
+        return try? JSONDecoder().decode([AppProfile].self, from: data)
     }
 }
 
@@ -182,6 +213,8 @@ struct AppMapping {
     var buttons: [String: KeyCombo] = [:]
     var fnButtons: [String: KeyCombo] = [:]
     var dials: [String: Dial] = [:]
+    var labels: [String: String] = [:]
+    var fnLabels: [String: String] = [:]
 
     init(_ p: AppProfile, device: DeviceID) {
         name = p.name
@@ -189,6 +222,8 @@ struct AppMapping {
         func parse(_ s: String?) -> KeyCombo? { s.flatMap { Keys.parse($0) } }
         buttons = b.buttons.compactMapValues { parse($0) }
         fnButtons = b.fnButtons.compactMapValues { parse($0) }
+        labels = b.labels ?? [:]
+        fnLabels = b.fnLabels ?? [:]
         dials = b.dials.mapValues { Dial(left: parse($0.left), right: parse($0.right), press: parse($0.press)) }
     }
 }

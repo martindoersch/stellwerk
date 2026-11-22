@@ -10,9 +10,12 @@ final class HUD {
     func show(_ text: String, symbol: String) {
         // Größe einmal messen und fest setzen. Die Ansicht darf die Fenstergröße nicht selbst steuern,
         // sonst schaukeln sich Fenster und SwiftUI-Layout auf (Absturz „Update Constraints in Window").
-        let host = NSHostingView(rootView: HUDView(text: text, symbol: symbol))
+        // Gemessen wird über SwiftUI: mit sizingOptions = [] liefert fittingSize 0 × 0 (getestet),
+        // dann war nur ein Ausschnitt mit dem Symbol zu sehen.
+        let view = HUDView(text: text, symbol: symbol)
+        let size = NSHostingController(rootView: view).sizeThatFits(in: CGSize(width: 2000, height: 1000))
+        let host = NSHostingView(rootView: view)
         host.sizingOptions = []
-        let size = host.fittingSize
         host.frame = NSRect(origin: .zero, size: size)
         host.autoresizingMask = [.width, .height]
         let p = panel ?? makePanel()

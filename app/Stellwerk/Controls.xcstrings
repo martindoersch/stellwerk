@@ -372,6 +372,138 @@
           }
         }
       }
+    },
+    "Vorschau": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preview"
+          }
+        }
+      }
+    },
+    "Öffnen": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
+          }
+        }
+      }
+    },
+    "Hoch": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up"
+          }
+        }
+      }
+    },
+    "Papierk.": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trash"
+          }
+        }
+      }
+    },
+    "Symbole": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icons"
+          }
+        }
+      }
+    },
+    "Liste": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List"
+          }
+        }
+      }
+    },
+    "Spalten": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Columns"
+          }
+        }
+      }
+    },
+    "Galerie": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gallery"
+          }
+        }
+      }
+    },
+    "Neu Ordn": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New fold"
+          }
+        }
+      }
+    },
+    "Duplik.": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dupl."
+          }
+        }
+      }
+    },
+    "Umbenenn": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

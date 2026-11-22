@@ -68,6 +68,16 @@
         }
       }
     },
+    "%@-Ebene aktiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ layer active"
+          }
+        }
+      }
+    },
     "%@: %@" : {
       "localizations" : {
         "de" : {
@@ -516,6 +526,16 @@
         }
       }
     },
+    "Eigene Änderungen an allen Geräten gehen verloren." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes on all devices will be lost."
+          }
+        }
+      }
+    },
     "Einstellungen …" : {
       "localizations" : {
         "en" : {
@@ -676,6 +696,16 @@
         }
       }
     },
+    "Grundbelegung aktiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base layer active"
+          }
+        }
+      }
+    },
     "Halten beim Drehen" : {
       "localizations" : {
         "en" : {
@@ -773,6 +803,16 @@
         }
       }
     },
+    "Kombi-Taste wie Fn (halten = vorübergehend, tippen = Ebene umschalten)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier button like Fn (hold = temporary, tap = switch layer)"
+          }
+        }
+      }
+    },
     "Kombi-Taste wie Fn (in Kombination)" : {
       "localizations" : {
         "en" : {
@@ -829,6 +869,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Menu “%@”"
+          }
+        }
+      }
+    },
+    "Mit Vorgabe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Preset"
           }
         }
       }
@@ -959,6 +1009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profile"
+          }
+        }
+      }
+    },
+    "Profil „%@\" auf die Vorgabe zurücksetzen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset profile “%@” to the preset?"
           }
         }
       }
@@ -1354,32 +1414,12 @@
         }
       }
     },
-    "Kombi-Taste wie Fn (halten = vorübergehend, tippen = Ebene umschalten)" : {
+    "Zurücksetzen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modifier button like Fn (hold = temporary, tap = switch layer)"
-          }
-        }
-      }
-    },
-    "%@-Ebene aktiv" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ layer active"
-          }
-        }
-      }
-    },
-    "Grundbelegung aktiv" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Base layer active"
+            "value" : "Reset"
           }
         }
       }

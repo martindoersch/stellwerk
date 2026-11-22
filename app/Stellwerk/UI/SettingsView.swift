@@ -493,6 +493,7 @@ private struct ButtonEditor: View {
 private struct ProfileBar: View {
     @Bindable var engine: Engine
     @State private var confirmDelete = false
+    @State private var confirmReset = false
 
     var body: some View {
         HStack {
@@ -504,6 +505,16 @@ private struct ProfileBar: View {
             }
             .frame(maxWidth: 260)
             Menu {
+                // Programme mit mitgelieferter Vorgabe zuerst, auch wenn sie nicht laufen
+                let presets = engine.defaultAppProfiles.filter { engine.appProfile($0.bundleID) == nil }
+                if !presets.isEmpty {
+                    Section("Mit Vorgabe") {
+                        ForEach(presets) { p in
+                            Button(p.name) { engine.addAppProfile(bundleID: p.bundleID, name: p.name) }
+                        }
+                    }
+                    Divider()
+                }
                 ForEach(candidates, id: \.processIdentifier) { app in
                     Button(app.localizedName ?? app.bundleIdentifier ?? "?") {
                         if let id = app.bundleIdentifier { engine.addAppProfile(bundleID: id, name: app.localizedName ?? id) }
@@ -516,6 +527,16 @@ private struct ProfileBar: View {
             }
             .fixedSize()
             if let id = engine.editingProfile {
+                if engine.defaultAppProfile(id) != nil {
+                    Button { confirmReset = true } label: { Image(systemName: "arrow.counterclockwise") }
+                        .help("Auf Vorgabe zurücksetzen")
+                        .confirmationDialog("Profil „\(engine.appProfile(id)?.name ?? id)\" auf die Vorgabe zurücksetzen?",
+                                            isPresented: $confirmReset) {
+                            Button("Zurücksetzen", role: .destructive) { engine.resetAppProfile(id) }
+                        } message: {
+                            Text("Eigene Änderungen an allen Geräten gehen verloren.")
+                        }
+                }
                 Button { confirmDelete = true } label: { Image(systemName: "trash") }
                     .help("Profil löschen")
                     .confirmationDialog("Profil „\(engine.appProfile(id)?.name ?? id)\" löschen?", isPresented: $confirmDelete) {
@@ -532,6 +553,7 @@ private struct ProfileBar: View {
             .filter { app in
                 guard app.activationPolicy == .regular, let id = app.bundleIdentifier else { return false }
                 return id != Bundle.main.bundleIdentifier && id != Engine.captureOneBundleID && engine.appProfile(id) == nil
+                    && engine.defaultAppProfile(id) == nil   // steht schon oben unter „Mit Vorgabe"
             }
             .sorted { ($0.localizedName ?? "") < ($1.localizedName ?? "") }
     }

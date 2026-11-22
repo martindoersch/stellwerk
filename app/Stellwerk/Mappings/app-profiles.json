@@ -1,0 +1,118 @@
+{
+  "_hinweis": "Vorgaben für Programmprofile (nur Tastenkürzel). Werden übernommen, wenn man das Programm in den Einstellungen hinzufügt; danach gilt die eigene Fassung in settings.json. Aufbau je Gerät wie dort: buttons/fnButtons = Taste → Kürzel, dials = Drehregler → left/right/press, labels/fnLabels = Kurznamen fürs Quick-Keys-Display (max. 8 Zeichen).",
+  "profiles": [
+    {
+      "bundleID": "com.apple.finder",
+      "name": "Finder",
+      "_hinweis": "Versuch 2026-11-22: Bilder sichten. Hauptrad = Auswahl ← → (in Symbolen/Galerie der Reihe nach durch alle Bilder; ↑ ↓ springt zeilenweise), zweiter Drehregler = ↑ ↓, Drücken = Übersicht (Quick Look, blättert mit). ⌘↑ = übergeordneter Ordner, ⌘↓ = öffnen, ⌘1–4 = Darstellung (Symbole, Liste, Spalten, Galerie).",
+      "devices": {
+        "loupedeck-plus": {
+          "buttons": {
+            "Undo": "cmd+z",
+            "Redo": "cmd+shift+z",
+            "Copy": "cmd+c",
+            "Paste": "cmd+v",
+            "Pfeil oben": "up",
+            "Pfeil unten": "down",
+            "Pfeil links": "left",
+            "Pfeil rechts": "right",
+            "Before/After": "space",
+            "Screen Mode": "cmd+ctrl+f",
+            "C1": "return",
+            "C2": "esc",
+            "C3": "cmd+up",
+            "C4": "cmd+down",
+            "C5": "cmd+n",
+            "C6": "cmd+w",
+            "P1": "cmd+1",
+            "P2": "cmd+2",
+            "P3": "cmd+3",
+            "P4": "cmd+4",
+            "P5": "cmd+shift+n",
+            "P6": "cmd+i",
+            "P7": "cmd+d",
+            "P8": "cmd+delete",
+            "L1": "cmd+t",
+            "L2": "ctrl+shift+tab",
+            "L3": "ctrl+tab"
+          },
+          "dials": {
+            "Control Dial (großes Rad)": { "left": "left", "right": "right", "press": "space" },
+            "Exposure": { "left": "cmd+up", "right": "cmd+down" },
+            "Contrast": { "left": "up", "right": "down" }
+          }
+        },
+        "tourbox-elite-plus": {
+          "buttons": {
+            "C1": "cmd+z",
+            "C2": "cmd+shift+z",
+            "Pfeil oben": "up",
+            "Pfeil unten": "down",
+            "Pfeil links": "left",
+            "Pfeil rechts": "right",
+            "Tall": "space",
+            "Top": "cmd+up",
+            "Short": "cmd+down",
+            "Tour": "return"
+          },
+          "fnButtons": {
+            "Tall": "cmd+i",
+            "Top": "cmd+shift+n",
+            "Short": "cmd+delete",
+            "Tour": "esc"
+          },
+          "dials": {
+            "Scroll": { "left": "right", "right": "left", "press": "space" },
+            "Knob": { "left": "up", "right": "down" },
+            "Dial": { "left": "ctrl+shift+tab", "right": "ctrl+tab" }
+          }
+        },
+        "xencelabs-quick-keys": {
+          "buttons": {
+            "T1": "space",
+            "T2": "cmd+down",
+            "T3": "cmd+up",
+            "T4": "cmd+delete",
+            "T5": "cmd+1",
+            "T6": "cmd+2",
+            "T7": "cmd+3",
+            "T8": "cmd+4"
+          },
+          "labels": {
+            "T1": "Vorschau",
+            "T2": "Öffnen",
+            "T3": "Hoch",
+            "T4": "Papierk.",
+            "T5": "Symbole",
+            "T6": "Liste",
+            "T7": "Spalten",
+            "T8": "Galerie"
+          },
+          "fnButtons": {
+            "T1": "cmd+z",
+            "T2": "cmd+shift+z",
+            "T3": "cmd+shift+n",
+            "T4": "cmd+i",
+            "T5": "cmd+t",
+            "T6": "ctrl+tab",
+            "T7": "cmd+d",
+            "T8": "return"
+          },
+          "fnLabels": {
+            "T1": "Undo",
+            "T2": "Redo",
+            "T3": "Neu Ordn",
+            "T4": "Info",
+            "T5": "Tab +",
+            "T6": "Tab >",
+            "T7": "Duplik.",
+            "T8": "Umbenenn"
+          },
+          "dials": {
+            "Rad": { "left": "left", "right": "right", "press": "space" }
+          }
+        }
+      }
+    }
+  ]
+}

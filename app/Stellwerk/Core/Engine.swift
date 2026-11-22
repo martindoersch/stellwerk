@@ -19,7 +19,7 @@ final class Engine {
     }
 
     static let captureOneBundleID = "com.captureone.captureone16"
-    static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile] }
+    static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile] } + [AppProfile.defaultsFile]
 
     /// Ein Gerät mit seinen Belegungsdaten und Laufzeit-Zustand
     struct Device {
@@ -69,6 +69,7 @@ final class Engine {
     var captureOneRunning = false
     var restartingCaptureOne = false
     var activeProfileName = "Capture One"   // Profil des vorderen Programms (Modus „aktives Programm")
+    private(set) var defaultAppProfiles: [AppProfile] = []   // mitgelieferte Vorgaben, z. B. Finder
     private(set) var devices: [DeviceID: Device] = Dictionary(uniqueKeysWithValues: DeviceID.allCases.map { ($0, Device(id: $0)) })
 
     // MARK: Einstellungsfenster & Anlernen
@@ -199,6 +200,8 @@ final class Engine {
             devices[id] = d
             warnings += d.defaultMapping.warnings.map { "\(d.name): \($0)" }
         }
+        if let p = AppProfile.loadDefaults() { defaultAppProfiles = p }
+        else { warnings.append(String(localized: "\(AppProfile.defaultsFile) fehlt oder ist kein gültiges JSON")) }
         applySettings()
         keyMode = .stars
         bwActive = false
@@ -313,12 +316,21 @@ final class Engine {
     func appBindings(_ bundleID: String) -> AppBindings { appProfile(bundleID)?.bindings(editingDevice) ?? AppBindings() }
     func appMapping(_ bundleID: String) -> AppMapping? { device(editingDevice).appMappings[bundleID] }
 
+    func defaultAppProfile(_ bundleID: String) -> AppProfile? { defaultAppProfiles.first { $0.bundleID == bundleID } }
+
+    /// Neues Profil; gibt es eine mitgelieferte Vorgabe, startet es mit deren Belegung
     func addAppProfile(bundleID: String, name: String) {
         guard bundleID != Self.captureOneBundleID else { editingProfile = nil; return }
         if appProfile(bundleID) == nil {
-            updateSettings { $0.appProfiles.append(AppProfile(bundleID: bundleID, name: name)) }
+            updateSettings { $0.appProfiles.append(defaultAppProfile(bundleID) ?? AppProfile(bundleID: bundleID, name: name)) }
         }
         editingProfile = bundleID
+    }
+
+    /// Belegung aller Geräte im Profil zurück auf die mitgelieferte Vorgabe
+    func resetAppProfile(_ bundleID: String) {
+        guard let d = defaultAppProfile(bundleID) else { return }
+        updateSettings { $0.updateProfile(bundleID) { $0.devices = d.devices } }
     }
 
     func removeAppProfile(_ bundleID: String) {
@@ -330,7 +342,10 @@ final class Engine {
     func setAppKeys(_ keys: String?, for name: String, fn: Bool, in bundleID: String) {
         let dev = editingDevice
         updateSettings { $0.updateProfile(bundleID) { p in
-            p.update(dev) { b in if fn { b.fnButtons[name] = keys } else { b.buttons[name] = keys } }
+            // Der Kurzname der Vorgabe passt nicht mehr zum neuen Kürzel → weg
+            p.update(dev) { b in
+                if fn { b.fnButtons[name] = keys; b.fnLabels?[name] = nil } else { b.buttons[name] = keys; b.labels?[name] = nil }
+            }
         } }
     }
 
@@ -355,7 +370,19 @@ final class Engine {
         let name = frontProfileID.flatMap { appProfile($0)?.name } ?? "Capture One"
         guard name != activeProfileName else { return }
         activeProfileName = name
-        if show && settings.targetMode == .frontmost { announce(name, symbol: "app.badge") }
+        if show && settings.targetMode == .frontmost {
+            announce(name, symbol: "app.badge")
+            // Auch auf dem Quick-Keys-Display kurz einblenden (nur beim Profilwechsel, sonst stört es – getestet)
+            // Kurz warten: beim Programmwechsel schreibt womöglich der Xencelabs-Treiber dazwischen
+            if settings.showHUD {
+                let text = name.replacingOccurrences(of: "ß", with: "ss")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    MainActor.assumeIsolated { self?.quickkeys.overlay(text, seconds: 2) }
+                }
+            }
+        }
+        refreshQuickKeys()   // Display zeigt die Belegung des aktiven Profils
+        quickkeys.ring(quickKeysRing())
     }
 
     // MARK: Menü-Kürzel der Programme (Anzeige in den Einstellungen)
@@ -658,12 +685,14 @@ final class Engine {
     private func quickKeysRing() -> UInt32 {
         let m = device(.quickkeys).mapping
         if fnActive(.quickkeys), let c = m.fnRing { return c }
+        if frontApp(.quickkeys) != nil { return m.dialSelect.ring ?? 0xFFFFFF }   // im Programmprofil gibt es keine Wahl
         let choice = selection[.quickkeys]?.current.flatMap { m.dialSelect.keys[$0] }
         return choice?.color ?? m.dialSelect.ring ?? 0xFFFFFF
     }
 
     /// Texte neben den Tasten: Kurzname + Wert; die gewählte Taste mit „>" davor.
     /// In der Fn-Ebene die Fn-Belegung (Kurzname aus der Belegungsdatei, sonst das Kürzel).
+    /// Ist ein Programmprofil aktiv, dessen Belegung (Kurzname aus der Vorgabe, sonst das Kürzel).
     private func refreshQuickKeys(force: Bool = false) {
         let d = device(.quickkeys), m = d.mapping
         if force {
@@ -672,12 +701,17 @@ final class Engine {
         }
         let fn = fnActive(.quickkeys)
         let own = settings.device(.quickkeys)
-        let current = fn ? nil : selection[.quickkeys]?.current
+        let app = frontApp(.quickkeys)
+        let current = fn || app != nil ? nil : selection[.quickkeys]?.current
         for i in 0 ..< 8 {
             guard let name = d.profile.nameByNote[i] else { continue }
             var label = "", value = ""
             // Kurzname der Vorgabe nur, solange die Taste in den Einstellungen nicht umbelegt ist
-            if fn {
+            if let app {
+                if let k = fn ? app.fnButtons[name] : app.buttons[name] {
+                    label = (fn ? app.fnLabels[name] : app.labels[name]).map(controlLabel) ?? prettyKeys(k.text)
+                }
+            } else if fn {
                 if let b = m.fnButtons[name] { label = own.fnButtons[name] == nil ? m.fnLabels[name].map(controlLabel) ?? describe(b) : describe(b) }
             } else if let b = m.buttons[name] {
                 label = own.buttons[name] == nil ? m.labels[name].map(controlLabel) ?? describe(b) : describe(b)
