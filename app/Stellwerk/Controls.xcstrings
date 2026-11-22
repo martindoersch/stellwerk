@@ -276,6 +276,102 @@
           }
         }
       }
+    },
+    "Grün": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Green"
+          }
+        }
+      }
+    },
+    "ohne": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "Rot": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red"
+          }
+        }
+      }
+    },
+    "Viewer": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viewer"
+          }
+        }
+      }
+    },
+    "0 Stern": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 stars"
+          }
+        }
+      }
+    },
+    "1 Stern": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 star"
+          }
+        }
+      }
+    },
+    "5 Sterne": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 stars"
+          }
+        }
+      }
+    },
+    "Alle": {
+      "comment": "Name of a hardware control or a short display label (max. 4 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

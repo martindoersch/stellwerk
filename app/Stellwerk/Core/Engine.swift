@@ -46,6 +46,16 @@ final class Engine {
     }
     @ObservationIgnored private var selection: [DeviceID: DialSelection] = [:]
 
+    /// Fn-Ebene per Tippen festgehalten (nur mit `fnLatch` in der Belegung, Quick Keys: Taste unten)
+    @ObservationIgnored private var fnLatched: Set<DeviceID> = []
+    /// Während die Kombi-Taste gehalten wird, wurde etwas anderes gedrückt/gedreht → beim Loslassen nicht umschalten
+    @ObservationIgnored private var fnUsed: Set<DeviceID> = []
+
+    /// Fn-Ebene aktiv: Kombi-Taste gehalten oder per Tippen festgehalten
+    private func fnActive(_ dev: DeviceID) -> Bool {
+        fnLatched.contains(dev) || held[dev, default: []].contains(device(dev).mapping.fnKey)
+    }
+
     // MARK: Zustand fürs Menü
     var hubState = TangentHub.State.starting
     var accessibilityOK = Accessibility.isTrusted
@@ -117,7 +127,10 @@ final class Engine {
         tourbox.onLog = { [weak self] in self?.log($0) }
         quickkeys.onConnection = { [weak self] name in
             self?.devices[.quickkeys]?.connectedName = name
-            if name == nil { self?.held[.quickkeys] = nil; self?.selection[.quickkeys] = nil; self?.devices[.quickkeys]?.battery = nil }
+            if name == nil {
+                self?.held[.quickkeys] = nil; self?.selection[.quickkeys] = nil; self?.devices[.quickkeys]?.battery = nil
+                self?.fnLatched.remove(.quickkeys)
+            }
         }
         quickkeys.onBattery = { [weak self] percent in self?.devices[.quickkeys]?.battery = percent }
         quickkeys.onReady = { [weak self] in self?.refreshQuickKeys() }
@@ -190,6 +203,7 @@ final class Engine {
         keyMode = .stars
         bwActive = false
         selection.removeAll()
+        fnLatched.removeAll()
         if hub.isConnected { requestStartValues() }
         refreshQuickKeys(force: true)
     }
@@ -380,7 +394,7 @@ final class Engine {
 
     private func learn(_ dev: DeviceID, _ name: String, dial: Bool) {
         learnSerial += 1
-        let fn = held[dev, default: []].contains(device(dev).mapping.fnKey)
+        let fn = fnActive(dev)
         learned = Learned(device: dev, name: name, fn: fn, dial: dial, serial: learnSerial)
         editingDevice = dev   // Einstellungen springen zum Gerät, an dem gedrückt wurde
         settingsTab = .buttons
@@ -399,6 +413,7 @@ final class Engine {
     func specialRole(_ name: String, inAppProfile: Bool = false) -> String? {
         if name == mapping.modeToggle { return String(localized: "Umschalter Sterne/Farben (Fn: Tasten)") }
         if name == mapping.fnKey {
+            if mapping.fnLatch { return String(localized: "Kombi-Taste wie Fn (halten = vorübergehend, tippen = Ebene umschalten)") }
             return mapping.fnKey == "Fn" ? String(localized: "Fn (in Kombination)") : String(localized: "Kombi-Taste wie Fn (in Kombination)")
         }
         if inAppProfile { return nil }
@@ -481,7 +496,7 @@ final class Engine {
     /// Belegung eines Drehreglers in der gerade aktiven Ebene (Fn gehalten, per Taste gewählt, Schwarzweiß)
     private func dialBinding(_ dev: DeviceID, _ name: String) -> DialBinding? {
         let m = device(dev).mapping
-        let fn = held[dev, default: []].contains(m.fnKey) ? m.fnDials[name] : nil
+        let fn = fnActive(dev) ? m.fnDials[name] : nil
         let selected = name == m.dialSelect.dial ? selection[dev]?.current.flatMap { m.dialSelect.keys[$0]?.binding } : nil
         return fn ?? selected ?? (bwActive ? m.bwDials[name] : nil) ?? m.dials[name]
     }
@@ -500,6 +515,7 @@ final class Engine {
             lastLearnTime = now
             return
         }
+        if held[dev, default: []].contains(device(dev).mapping.fnKey) { fnUsed.insert(dev) }
         if let app = frontApp(dev) {
             guard let k = ticks > 0 ? app.dials[name]?.right : app.dials[name]?.left else { log(notAssigned(name)); return }
             for _ in 0 ..< abs(ticks) { keys.sendToFront(k, viaMenu: false) }
@@ -537,9 +553,11 @@ final class Engine {
     }
 
     func press(_ dev: DeviceID, _ name: String) {
-        held[dev, default: []].insert(name)
         let d = device(dev), m = d.mapping
-        let fnHeld = held[dev, default: []].contains(m.fnKey)
+        if name == m.fnKey { fnUsed.remove(dev) } else if held[dev, default: []].contains(m.fnKey) { fnUsed.insert(dev) }
+        held[dev, default: []].insert(name)
+        let fnHeld = fnActive(dev)
+        if name == m.fnKey, dev == .quickkeys { refreshQuickKeys(); quickkeys.ring(quickKeysRing()) }   // Fn-Ebene zeigen, solange gehalten
         let isDial = d.profile.dialByCC.values.contains(name)
         let dialOnly = isDial && !d.profile.buttons.contains(name)   // Loupedeck: Drücken eines Drehreglers
 
@@ -606,6 +624,15 @@ final class Engine {
     func release(_ dev: DeviceID, _ name: String) {
         held[dev, default: []].remove(name)
         if dev == .loupedeck, keys.realDown.contains(name) { keys.postReal(name, down: false) }
+        let m = device(dev).mapping
+        if name == m.fnKey {
+            // Kurz getippt (nichts anderes dabei gedrückt) → Fn-Ebene festhalten bzw. aufheben
+            if m.fnLatch, !fnUsed.contains(dev) {
+                if fnLatched.contains(dev) { fnLatched.remove(dev) } else { fnLatched.insert(dev) }
+                log(fnLatched.contains(dev) ? String(localized: "\(m.fnKey)-Ebene aktiv") : String(localized: "Grundbelegung aktiv"))
+            }
+            if dev == .quickkeys { refreshQuickKeys(); quickkeys.ring(quickKeysRing()) }
+        }
         // Kurz getippt → Auswahl bleibt (nochmal tippen hebt sie auf); gehalten und gedreht → zurück zur vorigen
         if var s = selection[dev], s.holding == name {
             if !s.used { s.latched = s.latched == name ? nil : name }
@@ -622,30 +649,44 @@ final class Engine {
         guard dev == .quickkeys else { return }
         let m = device(dev).mapping
         let choice = selection[dev]?.current.flatMap { m.dialSelect.keys[$0] }
-        quickkeys.ring(choice?.color ?? m.dialSelect.ring ?? 0xFFFFFF)
+        quickkeys.ring(quickKeysRing())
         refreshQuickKeys()
         if let p = choice?.binding.param { lastAction = catalog.name(p) }
     }
 
-    /// Texte neben den Tasten: Kurzname + Wert; die gewählte Taste mit „>" davor
+    /// Ringfarbe: Fn-Ebene, sonst Farbe des gewählten Reglers, sonst Grundfarbe
+    private func quickKeysRing() -> UInt32 {
+        let m = device(.quickkeys).mapping
+        if fnActive(.quickkeys), let c = m.fnRing { return c }
+        let choice = selection[.quickkeys]?.current.flatMap { m.dialSelect.keys[$0] }
+        return choice?.color ?? m.dialSelect.ring ?? 0xFFFFFF
+    }
+
+    /// Texte neben den Tasten: Kurzname + Wert; die gewählte Taste mit „>" davor.
+    /// In der Fn-Ebene die Fn-Belegung (Kurzname aus der Belegungsdatei, sonst das Kürzel).
     private func refreshQuickKeys(force: Bool = false) {
         let d = device(.quickkeys), m = d.mapping
         if force {
             quickkeys.invalidate()
-            let choice = selection[.quickkeys]?.current.flatMap { m.dialSelect.keys[$0] }
-            quickkeys.ring(choice?.color ?? m.dialSelect.ring ?? 0xFFFFFF)
+            quickkeys.ring(quickKeysRing())
         }
-        let current = selection[.quickkeys]?.current
+        let fn = fnActive(.quickkeys)
+        let own = settings.device(.quickkeys)
+        let current = fn ? nil : selection[.quickkeys]?.current
         for i in 0 ..< 8 {
             guard let name = d.profile.nameByNote[i] else { continue }
             var label = "", value = ""
-            if let b = m.buttons[name] {
-                label = describe(b)
+            // Kurzname der Vorgabe nur, solange die Taste in den Einstellungen nicht umbelegt ist
+            if fn {
+                if let b = m.fnButtons[name] { label = own.fnButtons[name] == nil ? m.fnLabels[name].map(controlLabel) ?? describe(b) : describe(b) }
+            } else if let b = m.buttons[name] {
+                label = own.buttons[name] == nil ? m.labels[name].map(controlLabel) ?? describe(b) : describe(b)
             } else if let c = m.dialSelect.keys[name] {
-                // Die Display-Schrift kennt kein ß (getestet: „Weiß" → „Wei")
-                label = controlLabel(c.label).replacingOccurrences(of: "ß", with: "ss")
+                label = controlLabel(c.label)
                 if let p = c.binding.param, let v = values[p] { value = formatValue(v, p) }
             }
+            // Die Display-Schrift kennt kein ß (getestet: „Weiß" → „Wei")
+            label = label.replacingOccurrences(of: "ß", with: "ss")
             let mark = name == current ? ">" : ""
             let room = 8 - mark.count - value.count
             let sep = !value.isEmpty && label.count < room ? " " : ""

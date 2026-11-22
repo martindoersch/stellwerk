@@ -1353,6 +1353,36 @@
           }
         }
       }
+    },
+    "Kombi-Taste wie Fn (halten = vorübergehend, tippen = Ebene umschalten)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier button like Fn (hold = temporary, tap = switch layer)"
+          }
+        }
+      }
+    },
+    "%@-Ebene aktiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ layer active"
+          }
+        }
+      }
+    },
+    "Grundbelegung aktiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base layer active"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

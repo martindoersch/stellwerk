@@ -281,6 +281,10 @@ struct Mapping {
     // Modus-Tasten: Umschalter wechselt Sterne ↔ Farben, Fn + Umschalter = Modifier-Modus
     var modeToggle: String?
     var fnKey = "Fn"
+    var fnLatch = false                            // Kombi-Taste kurz tippen = Fn-Ebene bleibt, nochmal tippen = zurück
+    var fnRing: UInt32?                            // Quick Keys: Ringfarbe, solange die Fn-Ebene aktiv ist
+    var labels: [String: String] = [:]             // Kurznamen fürs Display (Quick Keys) …
+    var fnLabels: [String: String] = [:]           // … und für die Fn-Ebene
     var modeKeys: [String] = []
     var starIDs: [UInt32] = []
     var colorIDs: [UInt32] = []
@@ -331,6 +335,10 @@ struct Mapping {
         }
         buttons = buttonsFrom(entries(json["buttons"]))
         fnButtons = buttonsFrom(entries(json["fnButtons"]))
+        labels = entries(json["buttons"]).compactMapValues { $0["label"] as? String }
+        fnLabels = entries(json["fnButtons"]).compactMapValues { $0["label"] as? String }
+        fnLatch = json["fnLatch"] as? Bool ?? false
+        fnRing = (json["fnRing"] as? String).flatMap(hexID)
 
         let mod = json["modifiers"] as? [String: Any] ?? [:]
         fineFactor = mod["fine"] as? Double ?? fineFactor

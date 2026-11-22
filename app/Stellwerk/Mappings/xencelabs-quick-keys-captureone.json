@@ -1,9 +1,11 @@
 {
-  "_hinweis": "Belegung Xencelabs Quick Keys → Capture One. Tasten T1–T8 wählen, was das Rad steuert: halten + drehen = nur solange gehalten, kurz tippen = bleibt gewählt, nochmal tippen = zurück zur Grundbelegung. Knopf im Rad setzt den gewählten Regler zurück. Display: label + Wert, Ring: color (RGB hex). Taste unten ist für Seiten reserviert.",
+  "_hinweis": "Belegung Xencelabs Quick Keys → Capture One. Tasten T1–T8 wählen, was das Rad steuert: halten + drehen = nur solange gehalten, kurz tippen = bleibt gewählt, nochmal tippen = zurück zur Grundbelegung. Knopf im Rad setzt den gewählten Regler zurück. Display: label + Wert, Ring: color (RGB hex). Taste unten = Fn-Ebene (fnButtons): halten = solange gehalten, kurz tippen = bleibt (Ring fnRing), nochmal tippen = zurück. Links T1–T4, rechts T5–T8.",
   "app": "Capture One",
   "acceleration": { "fastMs": 70, "fastFactor": 3, "mediumMs": 120, "mediumFactor": 2 },
   "modifiers": { "fine": 0.2, "coarse": 4, "keyboard": true },
   "fn": "Unten",
+  "fnLatch": true,
+  "fnRing": "A040FF",
   "dials": {
     "Rad": { "plus": "0x8E", "minus": "0x8D", "_hinweis": "ohne Auswahl: rechts = nächstes, links = voriges Bild" }
   },
@@ -22,5 +24,14 @@
     }
   },
   "buttons": {},
-  "fnButtons": {}
+  "fnButtons": {
+    "T1": { "keys": "p", "label": "Grün" },
+    "T2": { "keys": "u", "label": "ohne" },
+    "T3": { "keys": "x", "label": "Rot" },
+    "T4": { "keys": "g", "label": "Viewer", "_hinweis": "Viewer ein/aus" },
+    "T5": { "keys": "0", "label": "0 Stern" },
+    "T6": { "keys": "1", "label": "1 Stern" },
+    "T7": { "keys": "5", "label": "5 Sterne" },
+    "T8": { "keys": "n", "label": "Alle", "_hinweis": "Alle anzeigen" }
+  }
 }

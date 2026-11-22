@@ -76,7 +76,9 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [x] In der App (2026-11-22): `QuickKeysInput`, Geräte- und Belegungsdatei. Neu im Kern: `dialSelect` – Tasten wählen, was das Rad steuert (halten + drehen = vorübergehend, tippen = bleibt, nochmal tippen = aufheben), Rad-Knopf = zurücksetzen. Display zeigt Kurzname + Wert aus Capture One, gewählte Taste mit „>", Ringfarbe je Regler. Ohne Auswahl: Rad = Bild vor/zurück. Baut ohne Warnungen
 - [x] Von Martin getestet ✅ (2026-11-22): Wahl per Halten/Tippen „fühlt sich richtig an", Schrittweiten passen. Einblendung beim Drehen störte → entfernt, die Werte neben den Tasten reichen. Einblendung beim Wählen störte ebenfalls → ganz weg (Wahl sieht man am „>" und an der Ringfarbe). **Display-Schrift kennt kein ß** („Weiß" → „Wei") → wird als „ss" geschrieben; Umlaute ungetestet
 - [ ] Parallel zum Xencelabs-Treiber (Tablett): Quick-Keys-Tasten dort deaktivieren, prüfen ob der Treiber das Display überschreibt (Stellwerk schreibt beim Wechsel zu Capture One neu)
-- [ ] **Seiten/Ebenen** allgemein im Kern (für alle Geräte): Taste „nächste Seite"/„Seite X". Quick Keys: Taste unten (derzeit Kombi-Taste wie Fn, ohne Belegung), Loupedeck: Custom Mode
+- [x] **Fn-Ebene zum Umschalten** (2026-11-22): Taste unten halten = Fn-Ebene vorübergehend, kurz tippen = bleibt (Ring violett, Display zeigt die Fn-Belegung), nochmal tippen = zurück. Im Kern per `"fnLatch": true` in der Belegung (sonst wie bisher, Loupedeck unverändert), Kurznamen fürs Display per `"label"` in `buttons`/`fnButtons`. Vorgabe: links Grün P / ohne U / Rot X / Viewer G, rechts 0 / 1 / 5 Sterne / Alle anzeigen N
+- [x] Fn-Ebene von Martin getestet ✅ (2026-11-22): „passt gut so"
+- [ ] **Seiten/Ebenen** allgemein im Kern (für alle Geräte): mehr als eine Zusatzebene, Taste „nächste Seite"/„Seite X". Loupedeck: Custom Mode
 - [ ] Einstellungsfenster: Wahltasten (`dialSelect`) dort sichtbar machen und bearbeiten
 - [x] Akkustand im Statusmenü neben „verbunden" (2026-11-22, `F2 01`). Balken im Display geht nicht: kein Pixelzugriff, nur Textfelder und Einblendung
 
