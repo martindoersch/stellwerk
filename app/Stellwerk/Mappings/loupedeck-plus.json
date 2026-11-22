@@ -311,5 +311,7 @@
       "kind": "dial"
     }
   },
-  "device": "Loupedeck+"
+  "device": "Loupedeck+",
+  "_hinweis_layerCCs": "Hue/Sat/Lum schalten im Gerät selbst um: die Farbregler senden dann CC 9–16 bzw. 17–24 statt 1–8 (CC 18 bei Lum gesehen, 2026-11-22)",
+  "layerCCs": { "Hue": 1, "Sat": 9, "Lum": 17 }
 }

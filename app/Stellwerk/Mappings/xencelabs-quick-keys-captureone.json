@@ -1,7 +1,8 @@
 {
   "_hinweis": "Belegung Xencelabs Quick Keys → Capture One. Tasten T1–T8 wählen, was das Rad steuert: halten + drehen = nur solange gehalten, kurz tippen = bleibt gewählt, nochmal tippen = zurück zur Grundbelegung. Knopf im Rad setzt den gewählten Regler zurück. Display: label + Wert, Ring: color (RGB hex). Taste unten = Fn-Ebene (fnButtons): halten = solange gehalten, kurz tippen = bleibt (Ring fnRing), nochmal tippen = zurück. Links T1–T4, rechts T5–T8.",
   "app": "Capture One",
-  "acceleration": { "fastMs": 70, "fastFactor": 3, "mediumMs": 120, "mediumFactor": 2 },
+  "_hinweis_beschleunigung": "Funk-Rad meldet unregelmäßig und ab und zu eine falsche Richtung (Messspur 2026-11-22) → smoothing = geglättet und stufenlos, ignoreReverseMs = einzelne Gegenraste verwerfen",
+  "acceleration": { "fastMs": 60, "fastFactor": 3, "mediumMs": 160, "mediumFactor": 2, "smoothing": 0.6, "ignoreReverseMs": 200 },
   "modifiers": { "fine": 0.2, "coarse": 4, "keyboard": true },
   "fn": "Unten",
   "fnLatch": true,

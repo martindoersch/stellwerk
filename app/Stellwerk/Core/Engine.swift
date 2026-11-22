@@ -19,7 +19,7 @@ final class Engine {
     }
 
     static let captureOneBundleID = "com.captureone.captureone16"
-    static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile] } + [AppProfile.defaultsFile]
+    static let mappingFiles = DeviceID.allCases.flatMap { [$0.profileFile, $0.mappingFile, $0.lightroomFile] } + [AppProfile.defaultsFile]
 
     /// Ein Gerät mit seinen Belegungsdaten und Laufzeit-Zustand
     struct Device {
@@ -28,6 +28,8 @@ final class Engine {
         var defaultMapping = Mapping()            // mitgelieferte Belegung ohne persönliche Änderungen
         var mapping = Mapping()                   // wirksame Belegung (Vorgabe + Einstellungen)
         var appMappings: [String: AppMapping] = [:]   // Programmprofile nach Bundle-ID
+        var lightroomDefault: Mapping?            // mitgelieferte Lightroom-Belegung (fehlt sie, gilt in Lightroom die Capture-One-Belegung)
+        var lightroomMapping: Mapping?            // wirksam (Geschwindigkeit usw. aus den Einstellungen)
         var connectedName: String?
         var battery: Int?                         // Akkustand in Prozent, falls das Gerät ihn meldet
         var name: String { profile.device }
@@ -46,6 +48,9 @@ final class Engine {
     }
     @ObservationIgnored private var selection: [DeviceID: DialSelection] = [:]
 
+    /// Gewählte Ebene der Drehregler je Gerät (Taste aus `layers` der Belegung); nil = defaultLayer
+    @ObservationIgnored private var layer: [DeviceID: String] = [:]
+
     /// Fn-Ebene per Tippen festgehalten (nur mit `fnLatch` in der Belegung, Quick Keys: Taste unten)
     @ObservationIgnored private var fnLatched: Set<DeviceID> = []
     /// Während die Kombi-Taste gehalten wird, wurde etwas anderes gedrückt/gedreht → beim Loslassen nicht umschalten
@@ -53,7 +58,7 @@ final class Engine {
 
     /// Fn-Ebene aktiv: Kombi-Taste gehalten oder per Tippen festgehalten
     private func fnActive(_ dev: DeviceID) -> Bool {
-        fnLatched.contains(dev) || held[dev, default: []].contains(device(dev).mapping.fnKey)
+        fnLatched.contains(dev) || held[dev, default: []].contains(activeMapping(dev).fnKey)
     }
 
     // MARK: Zustand fürs Menü
@@ -67,6 +72,8 @@ final class Engine {
     var launchAtLogin = SMAppService.mainApp.status == .enabled
     private(set) var settings = UserSettings.load()
     var captureOneRunning = false
+    var lightroomConnected = false          // Stellwerk-Plug-in in Lightroom verbunden
+    var lightroomRunning = false
     var restartingCaptureOne = false
     var activeProfileName = "Capture One"   // Profil des vorderen Programms (Modus „aktives Programm")
     private(set) var defaultAppProfiles: [AppProfile] = []   // mitgelieferte Vorgaben, z. B. Finder
@@ -89,9 +96,12 @@ final class Engine {
     private let tourbox = TourBoxInput()
     private let quickkeys = QuickKeysInput()
     private let hub = TangentHub()
+    private let lightroom = LightroomBridge()
     private let keys = KeyOutput()
     private let hud = HUD()
-    private var lastTick: [String: TimeInterval] = [:]
+    /// Zeitverlauf je Drehregler: letzte Raste, geglätteter Abstand (Beschleunigung), Richtung (Richtungsfilter)
+    private struct TickState { var time: TimeInterval = 0; var smoothedMs = 1000.0; var dir = 0; var reversePending = false }
+    private var tickState: [String: TickState] = [:]
 
     func device(_ id: DeviceID) -> Device { devices[id] ?? Device(id: id) }
 
@@ -118,6 +128,17 @@ final class Engine {
             self?.values[id] = v
             self?.showQuickKeysValue(id)
         }
+        lightroom.onLog = { [weak self] in self?.log($0) }
+        lightroom.onConnection = { [weak self] connected in
+            guard let self else { return }
+            self.lightroomConnected = connected
+            self.updateActiveProfile(announce: false)   // „Lightroom Classic" ↔ Profil/Capture One
+            self.refreshQuickKeys()
+        }
+        lightroom.onValue = { [weak self] id, v in
+            self?.values[id] = v
+            self?.showQuickKeysValue(id)
+        }
         midi.onConnection = { [weak self] name in self?.devices[.loupedeck]?.connectedName = name }
         midi.onMessage = { [weak self] s, d1, d2 in self?.handleMIDI(status: s, d1, d2) }
         tourbox.onConnection = { [weak self] name in
@@ -140,6 +161,7 @@ final class Engine {
         quickkeys.onLog = { [weak self] in self?.log($0) }
 
         hub.start()
+        lightroom.start()
         midi.start()
         tourbox.start()
         quickkeys.start()
@@ -168,7 +190,7 @@ final class Engine {
         }
         NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil,
                                                queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.keys.releaseAll(); self?.hub.stop(); self?.tourbox.stop(); self?.quickkeys.stop() }
+            MainActor.assumeIsolated { self?.keys.releaseAll(); self?.hub.stop(); self?.lightroom.stop(); self?.tourbox.stop(); self?.quickkeys.stop() }
         }
     }
 
@@ -182,7 +204,7 @@ final class Engine {
     }
 
     private func requestStartValues() {
-        for d in devices.values { for p in d.mapping.allParams { hub.request(p) } }
+        for d in devices.values { for p in d.mapping.allParams where !LightroomControls.contains(p) { hub.request(p) } }
     }
 
     // MARK: Belegung
@@ -194,14 +216,17 @@ final class Engine {
         if let c = Catalog.fromInstalledCaptureOne(bundleID: Self.captureOneBundleID) { catalog = c }
         else if let c = MappingStore.load("capture-one-controls.json") { catalog = Catalog(json: c) }
         else { warnings.append(String(localized: "Capture One nicht gefunden – Regler-Liste fehlt")) }
+        catalog.addLightroom()
         for id in DeviceID.allCases {
             var d = device(id)
             if let p = MappingStore.load(id.profileFile) { d.profile = DeviceProfile(json: p) }
             else { warnings.append(String(localized: "\(id.profileFile) fehlt – Gerät anlernen")) }
             if let m = MappingStore.load(id.mappingFile) { d.defaultMapping = Mapping(json: m, catalog: catalog) }
             else { warnings.append(String(localized: "\(id.mappingFile) fehlt oder ist kein gültiges JSON")) }
+            d.lightroomDefault = MappingStore.load(id.lightroomFile).map { Mapping(json: $0, catalog: catalog) }
             devices[id] = d
             warnings += d.defaultMapping.warnings.map { "\(d.name): \($0)" }
+            warnings += (d.lightroomDefault?.warnings ?? []).map { "\(d.name) (Lightroom): \($0)" }
         }
         if let p = AppProfile.loadDefaults() { defaultAppProfiles = p }
         else { warnings.append(String(localized: "\(AppProfile.defaultsFile) fehlt oder ist kein gültiges JSON")) }
@@ -210,6 +235,7 @@ final class Engine {
         bwActive = false
         selection.removeAll()
         fnLatched.removeAll()
+        layer.removeAll()
         if hub.isConnected { requestStartValues() }
         refreshQuickKeys(force: true)
     }
@@ -219,10 +245,13 @@ final class Engine {
         for id in DeviceID.allCases {
             var d = device(id)
             d.mapping = d.defaultMapping.applying(settings, device: id)
+            d.lightroomMapping = d.lightroomDefault?.applyingDialSettings(settings)
             d.appMappings = Dictionary(settings.appProfiles.map { ($0.bundleID, AppMapping($0, device: id)) },
                                        uniquingKeysWith: { a, _ in a })
             devices[id] = d
         }
+        // Lightroom meldet diese Werte von sich aus (auch Änderungen mit der Maus)
+        lightroom.watched = Set(devices.values.flatMap { $0.lightroomMapping?.allParams ?? [] })
     }
 
     func reloadMappings() {
@@ -249,6 +278,7 @@ final class Engine {
 
     private func updateCaptureOneRunning() {
         captureOneRunning = !NSRunningApplication.runningApplications(withBundleIdentifier: Self.captureOneBundleID).isEmpty
+        lightroomRunning = !NSRunningApplication.runningApplications(withBundleIdentifier: LightroomControls.bundleID).isEmpty
     }
 
     /// Beendet Capture One ordentlich (wie ⌘Q) und startet es neu, damit es sich mit Stellwerk verbindet.
@@ -359,7 +389,7 @@ final class Engine {
 
     /// Bundle-ID des vorderen Programms, wenn es ein Profil hat – nur im Modus „aktives Programm"
     private var frontProfileID: String? {
-        guard settings.targetMode == .frontmost,
+        guard settings.targetMode == .frontmost, !lightroomActive,
               let id = NSWorkspace.shared.frontmostApplication?.bundleIdentifier, appProfile(id) != nil else { return nil }
         return id
     }
@@ -374,7 +404,7 @@ final class Engine {
         // Laufend hier nachsehen statt captureOneRunning: beim Beenden kommt die Aktivierung evtl. vor dem Beenden-Signal.
         let captureOne = settings.targetMode != .frontmost
             || !NSRunningApplication.runningApplications(withBundleIdentifier: Self.captureOneBundleID).isEmpty
-        let profile = frontProfileID.flatMap { appProfile($0)?.name }
+        let profile = lightroomActive ? "Lightroom Classic" : frontProfileID.flatMap { appProfile($0)?.name }
         let name = profile ?? (captureOne ? "Capture One" : String(localized: "Kein Profil"))
         guard name != activeProfileName else { return }
         activeProfileName = name
@@ -473,9 +503,14 @@ final class Engine {
         switch status & 0xF0 {
         case 0xB0:
             let ticks = d2 < 64 ? d2 : d2 - 128   // relativ: 01 = +1, 7F = −1
-            if let name = p.dialByCC[d1] { turn(.loupedeck, name, ticks: ticks) } else { log(String(localized: "CC \(d1): nicht angelernt")) }
+            guard let name = p.dialByCC[d1] else { log(String(localized: "CC \(d1): nicht angelernt")); break }
+            // Ebene, die das Gerät selbst gewählt hat (Hue/Sat/Lum), gilt auch hier – falls die Taste davor nicht ankam
+            if let l = p.layerByCC[d1] { layer[.loupedeck] = l }
+            turn(.loupedeck, name, ticks: ticks)
         case 0x90 where d2 > 0:
-            if let name = p.nameByNote[d1] { press(.loupedeck, name) } else { log(String(localized: "Note \(d1): nicht angelernt")) }
+            guard let name = p.nameByNote[d1] else { log(String(localized: "Note \(d1): nicht angelernt")); break }
+            if let l = p.layerByCC[d1], p.dialByCC[d1] == name { layer[.loupedeck] = l }   // Drücken eines Farbreglers in Sat/Lum
+            press(.loupedeck, name)
         case 0x80, 0x90:   // NoteOff bzw. NoteOn mit Velocity 0 = losgelassen
             if let name = p.nameByNote[d1] { release(.loupedeck, name) }
         default: break
@@ -513,9 +548,9 @@ final class Engine {
     }
 
     #if DEBUG
-    /// Fehlersuche: jedes TourBox-Byte nach /tmp/stellwerk-tourbox.log
+    /// Fehlersuche: jedes TourBox-Byte und jede Quick-Keys-Raste nach /tmp/stellwerk-trace.log
     @ObservationIgnored private lazy var traceFile: FileHandle? = {
-        let url = URL(fileURLWithPath: "/tmp/stellwerk-tourbox.log")
+        let url = URL(fileURLWithPath: "/tmp/stellwerk-trace.log")
         FileManager.default.createFile(atPath: url.path, contents: nil)
         return try? FileHandle(forWritingTo: url)
     }()
@@ -528,17 +563,42 @@ final class Engine {
 
     // MARK: Router
 
+    /// Lightroom ist vorne, sein Plug-in verbunden und es gibt Lightroom-Belegungen → Lightroom direkt steuern
+    /// (nur im Modus „Im aktiven Programm"; sonst wirkt alles in Capture One)
+    private var lightroomActive: Bool {
+        settings.targetMode == .frontmost && lightroomConnected
+            && NSWorkspace.shared.frontmostApplication?.bundleIdentifier == LightroomControls.bundleID
+    }
+
+    /// Wirksame Belegung eines Geräts: Lightroom, wenn es gerade gesteuert wird und eine Belegung hat, sonst Capture One
+    private func activeMapping(_ dev: DeviceID) -> Mapping {
+        let d = device(dev)
+        return lightroomActive ? d.lightroomMapping ?? d.mapping : d.mapping
+    }
+
+    // Ausgabe nach ID: Lightroom-IDs ans Plug-in, alle anderen an Capture One (Tangent)
+    private func paramChange(_ p: UInt32, by d: Double) {
+        if LightroomControls.contains(p) { lightroom.change(p, by: d) } else { hub.change(p, by: Float(d)) }
+    }
+    private func paramReset(_ p: UInt32) {
+        if LightroomControls.contains(p) { lightroom.reset(p) } else { hub.reset(p) }
+    }
+    private func fire(_ a: UInt32) {
+        if LightroomControls.contains(a) { lightroom.action(a) } else { hub.action(a) }
+    }
+
     /// Belegung eines Drehreglers in der gerade aktiven Ebene (Fn gehalten, per Taste gewählt, Schwarzweiß)
     private func dialBinding(_ dev: DeviceID, _ name: String) -> DialBinding? {
-        let m = device(dev).mapping
+        let m = activeMapping(dev)
         let fn = fnActive(dev) ? m.fnDials[name] : nil
         let selected = name == m.dialSelect.dial ? selection[dev]?.current.flatMap { m.dialSelect.keys[$0]?.binding } : nil
-        return fn ?? selected ?? (bwActive ? m.bwDials[name] : nil) ?? m.dials[name]
+        let layered = (layer[dev] ?? m.defaultLayer).flatMap { m.layers[$0]?.dials[name] }
+        return fn ?? selected ?? layered ?? (bwActive ? m.bwDials[name] : nil) ?? m.dials[name]
     }
 
     /// Beim Halten einer Wahltaste wurde der Drehregler benutzt → beim Loslassen zurück zur vorigen Auswahl
     private func markSelectionUsed(_ dev: DeviceID, _ name: String) {
-        if name == device(dev).mapping.dialSelect.dial, selection[dev]?.holding != nil { selection[dev]?.used = true }
+        if name == activeMapping(dev).dialSelect.dial, selection[dev]?.holding != nil { selection[dev]?.used = true }
     }
 
     func turn(_ dev: DeviceID, _ name: String, ticks: Int) {
@@ -550,7 +610,7 @@ final class Engine {
             lastLearnTime = now
             return
         }
-        if held[dev, default: []].contains(device(dev).mapping.fnKey) { fnUsed.insert(dev) }
+        if held[dev, default: []].contains(activeMapping(dev).fnKey) { fnUsed.insert(dev) }
         if let app = frontApp(dev) {
             guard let k = ticks > 0 ? app.dials[name]?.right : app.dials[name]?.left else { log(notAssigned(name)); return }
             for _ in 0 ..< abs(ticks) { keys.sendToFront(k, viaMenu: false) }
@@ -559,22 +619,55 @@ final class Engine {
         }
         markSelectionUsed(dev, name)
         guard let b = dialBinding(dev, name) else { log(notAssigned(name)); return }
+        let m = activeMapping(dev)
+        let (ms, factor) = tickTiming("\(dev.rawValue):\(name)", ticks: ticks, m.accel)
+        if factor == 0 {   // vom Richtungsfilter verworfen
+            #if DEBUG
+            if dev == .quickkeys { trace(String(format: "QK ticks %+d  %6.0f ms  verworfen (Gegenraste)", ticks, ms)) }
+            #endif
+            return
+        }
         if let plus = b.plus, let minus = b.minus {   // Drehregler löst Aktionen aus
             let a = ticks > 0 ? plus : minus
-            for _ in 0 ..< abs(ticks) { hub.action(a) }
+            for _ in 0 ..< abs(ticks) { fire(a) }
             log("\(controlLabel(name)): \(catalog.name(a))")
             return
         }
         guard let p = b.param else { return }
-        let m = device(dev).mapping
-        let now = ProcessInfo.processInfo.systemUptime
-        let tickKey = "\(dev.rawValue):\(name)"
-        let ms = (now - (lastTick[tickKey] ?? 0)) * 1000
-        lastTick[tickKey] = now
-        let acc = m.accel
-        let factor = ms < acc.fastMs ? acc.fastFactor : ms < acc.mediumMs ? acc.mediumFactor : 1
-        hub.change(p, by: Float(Double(ticks) * b.perTick * m.speed * factor * modifierFactor(m)))
+        let delta = Double(ticks) * b.perTick * m.speed * factor * modifierFactor(m)
+        paramChange(p, by: delta)
+        #if DEBUG
+        // Fehlersuche schnelles Drehen (Quick Keys fühlten sich schlecht an): Abstand, Faktor, Delta
+        if dev == .quickkeys { trace(String(format: "QK %@ ticks %+d  %6.0f ms  ×%.1f  Δ %+.3f", catalog.name(p), ticks, ms, factor, delta)) }
+        #endif
         lastAction = catalog.name(p)
+    }
+
+    /// Abstand zur vorigen Raste und Beschleunigungsfaktor; 0 = Raste verwerfen (Richtungsfilter).
+    /// Standard: Stufen nach dem Abstand (Loupedeck, TourBox). Mit `smoothing` (Quick Keys): gleitender Mittelwert
+    /// und stufenloser Faktor – das Funk-Rad meldet unregelmäßig (45–160 ms bei gleichmäßigem Drehen, Messspur
+    /// 2026-11-22), die Stufen sprangen deshalb ständig. Mit `ignoreReverseMs`: eine einzelne Gegenraste mitten in
+    /// schneller Drehung verwerfen (das Rad meldete alle 5–8 Rasten eine falsche Richtung); ab der zweiten zählt sie.
+    private func tickTiming(_ key: String, ticks: Int, _ acc: Accel) -> (ms: Double, factor: Double) {
+        let now = ProcessInfo.processInfo.systemUptime
+        var s = tickState[key, default: TickState()]
+        defer { tickState[key] = s }
+        let ms = (now - s.time) * 1000
+        s.time = now
+        let dir = ticks > 0 ? 1 : -1
+        if acc.ignoreReverseMs > 0, s.dir != 0, dir != s.dir, ms < acc.ignoreReverseMs, !s.reversePending {
+            s.reversePending = true
+            return (ms, 0)
+        }
+        s.reversePending = false
+        s.dir = dir
+        guard acc.smoothing > 0 else {
+            return (ms, ms < acc.fastMs ? acc.fastFactor : ms < acc.mediumMs ? acc.mediumFactor : 1)
+        }
+        // Nach einer Pause neu beginnen, sonst glätten
+        s.smoothedMs = ms > acc.mediumMs * 2 ? ms : s.smoothedMs * acc.smoothing + ms * (1 - acc.smoothing)
+        let t = min(max((acc.mediumMs - s.smoothedMs) / (acc.mediumMs - acc.fastMs), 0), 1)
+        return (ms, 1 + (acc.fastFactor - 1) * t)
     }
 
     /// Alt/⌥ = fein, Shift/⇧ = grob (fein gewinnt, wenn beides gehalten wird).
@@ -588,7 +681,7 @@ final class Engine {
     }
 
     func press(_ dev: DeviceID, _ name: String) {
-        let d = device(dev), m = d.mapping
+        let d = device(dev), m = activeMapping(dev)
         if name == m.fnKey { fnUsed.remove(dev) } else if held[dev, default: []].contains(m.fnKey) { fnUsed.insert(dev) }
         held[dev, default: []].insert(name)
         let fnHeld = fnActive(dev)
@@ -608,6 +701,13 @@ final class Engine {
             case .colors: announce(String(localized: "Farben"), symbol: "paintpalette.fill")
             case .modifiers: announce(String(localized: "HUD.keys", defaultValue: "Tasten"), symbol: "keyboard")
             }
+            return
+        }
+        // Ebenen-Taste (z. B. Hue/Sat/Lum): wählt, was die Drehregler dieser Ebene steuern
+        if let l = m.layers[name], !fnHeld {
+            layer[dev] = name
+            log(String(localized: "Farbregler: \(controlLabel(l.label))"))
+            announce(controlLabel(l.label), symbol: "slider.horizontal.3")
             return
         }
         let app = frontApp(dev)
@@ -641,7 +741,7 @@ final class Engine {
             log(String(localized: "Farbregler: \(colorMode)"))
             announce(colorMode,
                      symbol: bwActive ? "circle.lefthalf.filled" : "circle.hexagongrid.fill")
-            if let a = m.bwAction { hub.action(a) }
+            if let a = m.bwAction { fire(a) }
             return
         }
         if fnHeld, let b = m.fnButtons[name] {   // Fn + Taste
@@ -651,7 +751,7 @@ final class Engine {
         switch m.buttons[name] {
         case let b?: run(b, name: controlLabel(name))
         case nil:   // Drücken eines Drehreglers setzt seinen Regler zurück (mit Fn: den Fn-Regler)
-            if let p = dialBinding(dev, name)?.param { hub.reset(p); log(String(localized: "\(catalog.name(p)) zurückgesetzt")) }
+            if let p = dialBinding(dev, name)?.param { paramReset(p); log(String(localized: "\(catalog.name(p)) zurückgesetzt")) }
             else { log(notAssigned(name)) }
         }
     }
@@ -659,7 +759,7 @@ final class Engine {
     func release(_ dev: DeviceID, _ name: String) {
         held[dev, default: []].remove(name)
         if dev == .loupedeck, keys.realDown.contains(name) { keys.postReal(name, down: false) }
-        let m = device(dev).mapping
+        let m = activeMapping(dev)
         if name == m.fnKey {
             // Kurz getippt (nichts anderes dabei gedrückt) → Fn-Ebene festhalten bzw. aufheben
             if m.fnLatch, !fnUsed.contains(dev) {
@@ -682,7 +782,7 @@ final class Engine {
     /// Auswahl geändert: Ring färben, Display neu beschriften (bewusst ohne Einblendung – getestet, stört)
     private func selectionChanged(_ dev: DeviceID) {
         guard dev == .quickkeys else { return }
-        let m = device(dev).mapping
+        let m = activeMapping(dev)
         let choice = selection[dev]?.current.flatMap { m.dialSelect.keys[$0] }
         quickkeys.ring(quickKeysRing())
         refreshQuickKeys()
@@ -691,7 +791,7 @@ final class Engine {
 
     /// Ringfarbe: Fn-Ebene, sonst Farbe des gewählten Reglers, sonst Grundfarbe
     private func quickKeysRing() -> UInt32 {
-        let m = device(.quickkeys).mapping
+        let m = activeMapping(.quickkeys)
         if fnActive(.quickkeys), let c = m.fnRing { return c }
         if frontApp(.quickkeys) != nil { return m.dialSelect.ring ?? 0xFFFFFF }   // im Programmprofil gibt es keine Wahl
         let choice = selection[.quickkeys]?.current.flatMap { m.dialSelect.keys[$0] }
@@ -702,13 +802,14 @@ final class Engine {
     /// In der Fn-Ebene die Fn-Belegung (Kurzname aus der Belegungsdatei, sonst das Kürzel).
     /// Ist ein Programmprofil aktiv, dessen Belegung (Kurzname aus der Vorgabe, sonst das Kürzel).
     private func refreshQuickKeys(force: Bool = false) {
-        let d = device(.quickkeys), m = d.mapping
+        let d = device(.quickkeys), m = activeMapping(.quickkeys)
         if force {
             quickkeys.invalidate()
             quickkeys.ring(quickKeysRing())
         }
         let fn = fnActive(.quickkeys)
-        let own = settings.device(.quickkeys)
+        // Eigene Umbelegungen gelten für Capture One; in Lightroom zählen die Kurznamen der Lightroom-Belegung
+        let own = lightroomActive ? DeviceSettings() : settings.device(.quickkeys)
         let app = frontApp(.quickkeys)
         let current = fn || app != nil ? nil : selection[.quickkeys]?.current
         for i in 0 ..< 8 {
@@ -738,7 +839,7 @@ final class Engine {
 
     /// Neuer Wert aus Capture One: Display nachführen (bewusst ohne Einblendung – die verdeckt die Tastentexte)
     private func showQuickKeysValue(_ id: UInt32) {
-        guard device(.quickkeys).mapping.dialSelect.keys.values.contains(where: { $0.binding.param == id }) else { return }
+        guard activeMapping(.quickkeys).dialSelect.keys.values.contains(where: { $0.binding.param == id }) else { return }
         refreshQuickKeys()
     }
 
@@ -750,7 +851,9 @@ final class Engine {
     private func run(_ b: ButtonBinding, name: String) {
         switch b {
         case .action(let a): trigger(a)
-        case .keys(let k): log("\(name): \(prettyKeys(k.text))"); keys.send(k, toBundleID: Self.captureOneBundleID)
+        case .keys(let k):
+            log("\(name): \(prettyKeys(k.text))")
+            keys.send(k, toBundleID: lightroomActive ? LightroomControls.bundleID : Self.captureOneBundleID)
         }
     }
 
@@ -759,7 +862,7 @@ final class Engine {
     }
 
     private func trigger(_ a: UInt32) {
-        hub.action(a)
+        fire(a)
         log(catalog.name(a))
     }
 

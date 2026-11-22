@@ -1,0 +1,27 @@
+{
+  "_hinweis": "Belegung TourBox Elite Plus → Lightroom Classic (über das Stellwerk-Plug-in), sinngemäß wie für Capture One. Side = Kombi-Taste. Drücken eines Drehreglers setzt seinen Regler zurück.",
+  "app": "Lightroom Classic",
+  "acceleration": { "fastMs": 20, "fastFactor": 4, "mediumMs": 45, "mediumFactor": 2 },
+  "modifiers": { "fine": 0.2, "coarse": 4, "keyboard": true },
+  "fn": "Side",
+  "dials": {
+    "Knob":   { "param": "Exposure2012", "perTick": 0.02 },
+    "Dial":   { "param": "Shadows2012", "perTick": 1 },
+    "Scroll": { "plus": "previous", "minus": "next", "_hinweis": "rauf = voriges, runter = nächstes Bild" }
+  },
+  "fnDials": {
+    "Knob":   { "param": "Highlights2012", "perTick": 1 },
+    "Dial":   { "param": "Blacks2012", "perTick": 1 }
+  },
+  "buttons": {
+    "C1":           { "action": "undo" },
+    "C2":           { "action": "redo" },
+    "Tour":         { "keys": "cmd+shift+c", "_hinweis": "Einstellungen kopieren" },
+    "Short":        { "keys": "cmd+shift+v", "_hinweis": "Einstellungen einfügen" },
+    "Pfeil links":  { "keys": "left" },
+    "Pfeil rechts": { "keys": "right" },
+    "Pfeil oben":   { "keys": "up" },
+    "Pfeil unten":  { "keys": "down" }
+  },
+  "fnButtons": {}
+}

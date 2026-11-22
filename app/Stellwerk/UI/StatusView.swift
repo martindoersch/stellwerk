@@ -38,6 +38,11 @@ struct StatusView: View {
                     .padding(.leading, 18)
                     .help("Capture One verbindet sich nur beim Start. Wird ordentlich beendet (wie ⌘Q) und neu gestartet.")
                 }
+                if engine.lightroomRunning || engine.lightroomConnected {
+                    StatusRow(ok: engine.lightroomConnected, warn: true, title: "Lightroom Classic",
+                              detail: engine.lightroomConnected ? String(localized: "verbunden") : String(localized: "Plug-in nicht verbunden"))
+                        .help("Stellwerk-Plug-in in Lightroom: lightroom/install.sh, dann Lightroom neu starten")
+                }
                 StatusRow(ok: engine.accessibilityOK, title: String(localized: "Bedienungshilfen"),
                           detail: engine.accessibilityOK ? String(localized: "freigegeben") : String(localized: "Freigabe fehlt"))
                 if !engine.accessibilityOK {

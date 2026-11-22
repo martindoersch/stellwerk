@@ -116,6 +116,14 @@ local function ensureDevelop()
     end
 end
 
+-- Bereich des Reglers in Lightroom aufklappen (z. B. HSL-Reiter Sättigung), nur wenn ein anderer Regler dran ist
+local revealed = nil
+local function reveal(param)
+    if param == revealed then return end
+    revealed = param
+    pcall(LrDevelopController.revealPanel, param)
+end
+
 local function clamp(param, v)
     local ok, min, max = pcall(LrDevelopController.getRange, param)
     if ok and min and max then
@@ -147,6 +155,7 @@ local function run(cmd, a, b)
     if cmd == 'change' then
         -- Deltas wurden schon zusammengefasst (siehe drain)
         ensureDevelop()
+        reveal(a)
         local v = (LrDevelopController.getValue(a) or 0) + b
         LrDevelopController.setValue(a, clamp(a, v))
         sendValue(a)
@@ -156,6 +165,7 @@ local function run(cmd, a, b)
         sendValue(a)
     elseif cmd == 'reset' then
         ensureDevelop()
+        reveal(a)
         LrDevelopController.resetToDefault(a)
         sendValue(a)
     elseif cmd == 'get' then

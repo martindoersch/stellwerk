@@ -1,0 +1,38 @@
+{
+  "_hinweis": "Belegung Xencelabs Quick Keys → Lightroom Classic (über das Stellwerk-Plug-in), wie für Capture One: T1–T8 wählen, was das Rad steuert (halten = vorübergehend, tippen = bleibt), Rad-Knopf setzt zurück, Taste unten = Fn-Ebene (Markierungen, Sterne, Ansichten).",
+  "app": "Lightroom Classic",
+  "_hinweis_beschleunigung": "Funk-Rad meldet unregelmäßig und ab und zu eine falsche Richtung (Messspur 2026-11-22) → smoothing = geglättet und stufenlos, ignoreReverseMs = einzelne Gegenraste verwerfen",
+  "acceleration": { "fastMs": 60, "fastFactor": 3, "mediumMs": 160, "mediumFactor": 2, "smoothing": 0.6, "ignoreReverseMs": 200 },
+  "modifiers": { "fine": 0.2, "coarse": 4, "keyboard": true },
+  "fn": "Unten",
+  "fnLatch": true,
+  "fnRing": "A040FF",
+  "dials": {
+    "Rad": { "plus": "next", "minus": "previous", "_hinweis": "ohne Auswahl: rechts = nächstes, links = voriges Bild" }
+  },
+  "dialSelect": {
+    "dial": "Rad",
+    "ring": "C8F000",
+    "keys": {
+      "T1": { "param": "Exposure2012",   "perTick": 0.05, "label": "Bel",  "color": "FFFFFF" },
+      "T2": { "param": "Contrast2012",   "perTick": 2,    "label": "Kon",  "color": "FFFFFF" },
+      "T3": { "param": "Highlights2012", "perTick": 2,    "label": "Lich", "color": "FFE080" },
+      "T4": { "param": "Shadows2012",    "perTick": 2,    "label": "Tief", "color": "4060FF" },
+      "T5": { "param": "Whites2012",     "perTick": 2,    "label": "Weiß", "color": "FFE080" },
+      "T6": { "param": "Blacks2012",     "perTick": 2,    "label": "Schw", "color": "4060FF" },
+      "T7": { "param": "Temperature",    "perTick": 50,   "label": "K",    "color": "FF8000", "_hinweis": "Raw: Kelvin" },
+      "T8": { "param": "Clarity2012",    "perTick": 2,    "label": "Klar", "color": "00C0FF" }
+    }
+  },
+  "buttons": {},
+  "fnButtons": {
+    "T1": { "action": "pick",    "label": "Auswahl" },
+    "T2": { "action": "unflag",  "label": "ohne" },
+    "T3": { "action": "reject",  "label": "Ablehnen" },
+    "T4": { "keys": "e",         "label": "Lupe", "_hinweis": "Lupenansicht" },
+    "T5": { "action": "rating0", "label": "0 Stern" },
+    "T6": { "action": "rating1", "label": "1 Stern" },
+    "T7": { "action": "rating5", "label": "5 Sterne" },
+    "T8": { "keys": "g",         "label": "Raster", "_hinweis": "Rasteransicht" }
+  }
+}

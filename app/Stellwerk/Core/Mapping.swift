@@ -66,8 +66,23 @@ struct C1Control { let name: String; let isParam: Bool; let step: Double; var gr
 
 struct Catalog {
     var items: [UInt32: C1Control] = [:]
+    var ids: [String: UInt32] = [:]   // Lightroom-Namen (z. B. "Exposure2012") → ID
 
     init() {}
+
+    /// Lightroom-Regler und -Aktionen dazunehmen (eigener ID-Bereich, siehe LightroomControls)
+    mutating func addLightroom() {
+        for (id, c) in LightroomControls.byID {
+            items[id] = C1Control(name: c.name, isParam: c.isParam, step: c.step, group: "Lightroom")
+            ids[c.key] = id
+        }
+    }
+
+    /// ID aus der Belegungsdatei: Lightroom-Name oder Hex-ID (Capture One)
+    func resolve(_ s: String) -> UInt32? { ids[s] ?? hexID(s) }
+
+    /// Capture-One-Liste vorhanden? (Lightroom ist immer drin)
+    var hasCaptureOne: Bool { items.keys.contains { !LightroomControls.contains($0) } }
 
     init(json: [String: Any]) {
         guard let groups = json["groups"] as? [[String: Any]] else { return }
@@ -103,9 +118,9 @@ struct Catalog {
 
     func name(_ id: UInt32) -> String { items[id]?.name ?? hexStr(id) }
 
-    /// Alle auslösbaren Aktionen (keine Regler), nach Gruppe und Name sortiert
+    /// Alle auslösbaren Capture-One-Aktionen (keine Regler), nach Gruppe und Name sortiert
     var actions: [(id: UInt32, control: C1Control)] {
-        items.filter { !$0.value.isParam }.map { (id: $0.key, control: $0.value) }
+        items.filter { !$0.value.isParam && !LightroomControls.contains($0.key) }.map { (id: $0.key, control: $0.value) }
             .sorted { ($0.control.group, $0.control.name) < ($1.control.group, $1.control.name) }
     }
 }
@@ -159,6 +174,7 @@ struct DeviceProfile {
     var nameByNote: [Int: String] = [:]   // Tasten und Drücken der Drehregler
     var buttons: [String] = []            // echte Tasten, in sinnvoller Reihenfolge
     var dials: [String] = []              // Drehregler, in sinnvoller Reihenfolge
+    var layerByCC: [Int: String] = [:]    // Gerät schaltet Ebenen selbst (Loupedeck: Hue/Sat/Lum ändern die CCs der Farbregler)
 
     init() {}
 
@@ -168,6 +184,22 @@ struct DeviceProfile {
         // Drücken eines Drehreglers sendet die Note mit seiner CC-Nummer; echte Tasten haben Vorrang
         for (name, c) in controls { if let cc = c["cc"] as? Int { dialByCC[cc] = name; nameByNote[cc] = name } }
         for (name, c) in controls { if let note = c["note"] as? Int { nameByNote[note] = name } }
+        // "layerCCs": {"Hue": 1, "Sat": 9, "Lum": 17} – erste CC jeder Ebene; die Drehregler ab der ersten Ebene
+        // (CC 1, 2, …) senden in den anderen Ebenen um denselben Abstand verschoben (getestet: Lum, Regler 2 = CC 18)
+        if let lay = json["layerCCs"] as? [String: Int], let first = lay.values.min() {
+            let layered = controls.compactMap { name, c -> (Int, String)? in
+                guard let cc = c["cc"] as? Int, cc >= first, cc < first + 8 else { return nil }
+                return (cc, name)
+            }
+            for (layerName, start) in lay {
+                for (cc, name) in layered {
+                    dialByCC[start + cc - first] = name
+                    layerByCC[start + cc - first] = layerName
+                    // Drücken sendet die Note mit derselben Nummer (zurücksetzen); echte Tasten haben Vorrang
+                    if nameByNote[start + cc - first] == nil { nameByNote[start + cc - first] = name }
+                }
+            }
+        }
         // Reihenfolge aus der Gerätedatei ("order"/"dialOrder"), sonst die des Loupedeck+
         var loupedeckOrder: [String] = ["Undo", "Redo", "Copy", "Paste", "Before/After", "Export", "Screen Mode", "Custom Mode"]
         loupedeckOrder += (1...8).map { "P\($0)" } + (1...6).map { "C\($0)" }
@@ -241,7 +273,11 @@ struct DialSelect {
     var keys: [String: Choice] = [:]
 }
 
-struct Accel { var fastMs = 20.0, fastFactor = 4.0, mediumMs = 45.0, mediumFactor = 2.0 }
+struct Accel {
+    var fastMs = 20.0, fastFactor = 4.0, mediumMs = 45.0, mediumFactor = 2.0
+    var smoothing = 0.0         // > 0: gleitender Mittelwert der Abstände, Faktor stufenlos zwischen mediumMs (×1) und fastMs
+    var ignoreReverseMs = 0.0   // > 0: einzelne Gegenraste innerhalb dieser Zeit verwerfen (Quick-Keys-Rad)
+}
 
 /// Lesbare Form eines Tastenkürzels: "cmd+shift+z" → "⇧⌘Z"
 func prettyKeys(_ s: String) -> String {
@@ -298,34 +334,56 @@ struct Mapping {
 
     var dialSelect = DialSelect()
 
+    /// Tasten wählen eine Ebene der Drehregler (Loupedeck in Lightroom: Hue/Sat/Lum → Farbregler).
+    /// Die gewählte Ebene bleibt, bis eine andere Ebenen-Taste gedrückt wird; ohne Wahl gilt defaultLayer.
+    struct DialLayer { var label: String; var dials: [String: DialBinding] }
+    var layers: [String: DialLayer] = [:]
+    var defaultLayer: String?
+
     var warnings: [String] = []
 
     init() {}
 
     init(json: [String: Any], catalog: Catalog) {
         app = json["app"] as? String ?? app
+        var unknown: [String] = []
+        /// Regler/Aktion aus der Datei: Lightroom-Name oder Hex-ID; Unbekanntes wird gemeldet
+        func id(_ v: Any?, _ name: String) -> UInt32? {
+            guard let s = v as? String else { return nil }
+            if let i = catalog.resolve(s) { return i }
+            unknown.append("\(name): \(s)")
+            return nil
+        }
         func dialsFrom(_ raw: [String: [String: Any]]) -> [String: DialBinding] {
             var out: [String: DialBinding] = [:]
             for (name, v) in raw {
-                let p = (v["param"] as? String).flatMap(hexID)
+                let p = id(v["param"], name)
                 out[name] = DialBinding(param: p,
                                         perTick: v["perTick"] as? Double ?? p.flatMap { catalog.items[$0]?.step } ?? 0.1,
-                                        plus: (v["plus"] as? String).flatMap(hexID),
-                                        minus: (v["minus"] as? String).flatMap(hexID))
+                                        plus: id(v["plus"], name),
+                                        minus: id(v["minus"], name))
             }
             return out
         }
 
-        if let a = json["acceleration"] as? [String: Double] {
+        let lay = json["layers"] as? [String: Any] ?? [:]
+        defaultLayer = lay["default"] as? String
+        for (button, v) in entries(lay) {
+            layers[button] = DialLayer(label: v["label"] as? String ?? button, dials: dialsFrom(entries(v["dials"])))
+        }
+
+        // Hinweistexte überspringen: ein strenger Cast auf [String: Double] verwarf sonst den ganzen Abschnitt
+        if let a = (json["acceleration"] as? [String: Any])?.compactMapValues({ $0 as? Double }) {
             accel = Accel(fastMs: a["fastMs"] ?? 20, fastFactor: a["fastFactor"] ?? 4,
-                          mediumMs: a["mediumMs"] ?? 45, mediumFactor: a["mediumFactor"] ?? 2)
+                          mediumMs: a["mediumMs"] ?? 45, mediumFactor: a["mediumFactor"] ?? 2,
+                          smoothing: a["smoothing"] ?? 0, ignoreReverseMs: a["ignoreReverseMs"] ?? 0)
         }
         dials = dialsFrom(entries(json["dials"]))
         fnDials = dialsFrom(entries(json["fnDials"]))
         func buttonsFrom(_ raw: [String: [String: Any]]) -> [String: ButtonBinding] {
             var out: [String: ButtonBinding] = [:]
             for (name, v) in raw {
-                if let a = (v["action"] as? String).flatMap(hexID) {
+                if let a = id(v["action"], name) {
                     out[name] = .action(a)
                 } else if let k = v["keys"] as? String {
                     if let combo = Keys.parse(k) { out[name] = .keys(combo) } else { warnings.append(String(localized: "\(name): Tastenkürzel \(k) nicht lesbar")) }
@@ -349,14 +407,14 @@ struct Mapping {
         modeToggle = mode["toggle"] as? String
         fnKey = json["fn"] as? String ?? mode["fn"] as? String ?? fnKey   // Kombi-Taste, z. B. "Side" bei der TourBox
         modeKeys = mode["keys"] as? [String] ?? []
-        starIDs = (mode["stars"] as? [String] ?? []).compactMap(hexID)
-        colorIDs = (mode["colors"] as? [String] ?? []).compactMap(hexID)
-        starsClear = (mode["starsClear"] as? String).flatMap(hexID)
-        colorsClear = (mode["colorsClear"] as? String).flatMap(hexID)
+        starIDs = (mode["stars"] as? [String] ?? []).compactMap { id($0, "stars") }
+        colorIDs = (mode["colors"] as? [String] ?? []).compactMap { id($0, "colors") }
+        starsClear = id(mode["starsClear"], "starsClear")
+        colorsClear = id(mode["colorsClear"], "colorsClear")
 
         let bw = json["bwLayer"] as? [String: Any] ?? [:]
         bwToggle = bw["toggle"] as? String
-        bwAction = (bw["action"] as? String).flatMap(hexID)
+        bwAction = id(bw["action"], "bwLayer")
         bwDials = dialsFrom(entries(bw["dials"]))
 
         let sel = json["dialSelect"] as? [String: Any] ?? [:]
@@ -369,8 +427,9 @@ struct Mapping {
                                                       color: (selKeys[name]?["color"] as? String).flatMap(hexID))
         }
 
+        warnings += unknown.map { String(localized: "\($0) unbekannt") }
         // IDs gegen controls.xml prüfen
-        guard !catalog.items.isEmpty else { return }
+        guard catalog.hasCaptureOne else { return }
         let buttonIDs = (Array(buttons.values) + Array(fnButtons.values)).compactMap { b -> UInt32? in if case .action(let a) = b { return a } else { return nil } }
         let dialIDs = (Array(dials.values) + Array(fnDials.values) + Array(bwDials.values) + Array(selDials.values))
             .flatMap { [$0.param, $0.plus, $0.minus].compactMap { $0 } }
@@ -380,7 +439,7 @@ struct Mapping {
 
     /// Alle Regler-IDs, deren Startwert wir abfragen
     var allParams: Set<UInt32> {
-        Set((Array(dials.values) + Array(fnDials.values) + Array(bwDials.values) + dialSelect.keys.values.map(\.binding))
-            .compactMap(\.param))
+        Set((Array(dials.values) + Array(fnDials.values) + Array(bwDials.values) + dialSelect.keys.values.map(\.binding)
+             + layers.values.flatMap(\.dials.values)).compactMap(\.param))
     }
 }

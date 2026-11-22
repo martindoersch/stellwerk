@@ -58,6 +58,16 @@
         }
       }
     },
+    "%@ unbekannt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ unknown"
+          }
+        }
+      }
+    },
     "%@ zurückgesetzt" : {
       "localizations" : {
         "en" : {
@@ -863,6 +873,26 @@
         }
       }
     },
+    "Lightroom getrennt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightroom disconnected"
+          }
+        }
+      }
+    },
+    "Lightroom verbunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightroom connected"
+          }
+        }
+      }
+    },
     "Löschen" : {
       "localizations" : {
         "en" : {
@@ -979,6 +1009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Folder"
+          }
+        }
+      }
+    },
+    "Plug-in nicht verbunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plug-in not connected"
           }
         }
       }
@@ -1172,6 +1212,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stellwerk must be running before Capture One – otherwise restart Capture One."
+          }
+        }
+      }
+    },
+    "Stellwerk-Plug-in in Lightroom: lightroom/install.sh, dann Lightroom neu starten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellwerk plug-in in Lightroom: run lightroom/install.sh, then restart Lightroom"
           }
         }
       }

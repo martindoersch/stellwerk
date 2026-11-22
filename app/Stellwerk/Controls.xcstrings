@@ -504,6 +504,90 @@
           }
         }
       }
+    },
+    "Auswahl": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick"
+          }
+        }
+      }
+    },
+    "Ablehnen": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reject"
+          }
+        }
+      }
+    },
+    "Lupe": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loupe"
+          }
+        }
+      }
+    },
+    "Raster": {
+      "comment": "Name of a hardware control or a short display label (max. 8 characters) from the device files",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grid"
+          }
+        }
+      }
+    },
+    "Farbton": {
+      "comment": "Name of a hardware control or a short display label from the device files (here: HSL layer of the colour dials)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hue"
+          }
+        }
+      }
+    },
+    "Sättigung": {
+      "comment": "Name of a hardware control or a short display label from the device files (here: HSL layer of the colour dials)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saturation"
+          }
+        }
+      }
+    },
+    "Luminanz": {
+      "comment": "Name of a hardware control or a short display label from the device files (here: HSL layer of the colour dials)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luminance"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

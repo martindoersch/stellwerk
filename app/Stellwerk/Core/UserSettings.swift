@@ -10,6 +10,7 @@ enum DeviceID: String, CaseIterable, Codable, Hashable {
 
     var profileFile: String { rawValue + ".json" }              // Gerät: Signal → Beschriftung
     var mappingFile: String { rawValue + "-captureone.json" }   // Belegung für Capture One
+    var lightroomFile: String { rawValue + "-lightroom.json" }  // Belegung für Lightroom Classic (Plug-in)
 }
 
 /// Belegung einer Taste, wenn sie von der Vorgabe abweicht
@@ -184,12 +185,7 @@ struct UserSettings: Codable, Equatable {
 extension Mapping {
     /// Vorgabe + persönliche Einstellungen = wirksame Belegung eines Geräts
     func applying(_ s: UserSettings, device: DeviceID) -> Mapping {
-        var m = self
-        m.speed = s.speed
-        m.accel.mediumFactor = 1 + s.acceleration
-        m.accel.fastFactor = 1 + 3 * s.acceleration
-        m.fineFactor = s.fine
-        m.coarseFactor = s.coarse
+        var m = applyingDialSettings(s)
         func apply(_ choices: [String: ButtonChoice], to target: inout [String: ButtonBinding]) {
             for (name, choice) in choices {
                 switch choice {
@@ -202,6 +198,17 @@ extension Mapping {
         let d = s.device(device)
         apply(d.buttons, to: &m.buttons)
         apply(d.fnButtons, to: &m.fnButtons)
+        return m
+    }
+
+    /// Nur Geschwindigkeit, Beschleunigung und Fein/Grob (gilt für alle Programme)
+    func applyingDialSettings(_ s: UserSettings) -> Mapping {
+        var m = self
+        m.speed = s.speed
+        m.accel.mediumFactor = 1 + s.acceleration
+        m.accel.fastFactor = 1 + 3 * s.acceleration
+        m.fineFactor = s.fine
+        m.coarseFactor = s.coarse
         return m
     }
 }
