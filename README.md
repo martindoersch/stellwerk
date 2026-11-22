@@ -12,6 +12,7 @@ Named after the railway *Stellwerk* (signal box): many levers set many switches,
 |---|---|---|
 | Loupedeck+ | USB, shows up as a MIDI device | No, the Loupedeck software doesn't have to run |
 | TourBox Elite Plus | USB cable (serial) | No, quit TourBox Console while Stellwerk runs |
+| Xencelabs Quick Keys | HID, wireless dongle or cable | No. If you run the Xencelabs tablet driver, set all Quick Keys keys and both dial directions to *Disable* in a key set and dial mode of their own and select them, otherwise keys fire twice. The bottom key and the dial button also switch sets/modes in the driver |
 
 | App | Interface | |
 |---|---|---|

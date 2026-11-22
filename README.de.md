@@ -8,7 +8,7 @@ Name nach dem Bahn-Stellwerk: viele Hebel stellen viele Weichen, zentral verscha
 
 ## Was es heute kann
 
-- **Geräte:** Loupedeck+ (USB/MIDI) und TourBox Elite Plus (USB-Kabel), ohne Hersteller-Software
+- **Geräte:** Loupedeck+ (USB/MIDI), TourBox Elite Plus (USB-Kabel) und Xencelabs Quick Keys (Funk-Dongle oder Kabel), ohne Hersteller-Software. Läuft der Xencelabs-Treiber fürs Tablett: dort einen eigenen Tastensatz und eine Drehschalter-Klickabfolge mit allem auf „Deaktivieren" anlegen und auswählen, sonst lösen Tasten doppelt aus. Die Taste unten und der Rad-Knopf wechseln im Treiber auch Satz bzw. Modus
 - **Apps:** Capture One über das Tangent-Protokoll (Stellwerk spielt den Tangent Hub), dazu jede App über Tastenkürzel und Menüeinträge (Profile je Programm)
 - Geschwindigkeit, Beschleunigung, Fein/Grob, jede Taste umbelegbar, Fn-Ebene, Modi mit Einblendung
 - Oberfläche auf Deutsch und Englisch
