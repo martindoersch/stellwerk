@@ -5,6 +5,11 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 ## Als Nächstes (Martin, 2026-11-21)
 
 - [ ] **Programmprofile ausbauen und im Alltag testen.** Grundlage steht: Modus „Im aktiven Programm“, Profile pro Gerät, Kürzel für Tasten und Drehregler, Menüeintrag neben jedem Kürzel. Zu klären: welche Programme zuerst (Photoshop? Premiere? Finder?), sinnvolle Vorgaben je Programm, ob Drehregler mehr als Kürzel brauchen (z. B. Scrollen, Pinselgröße)
+- [ ] **Öffentlich auf GitHub** (2026-11-22). Vorbereitet: englische Oberfläche (String Catalog), `README.md` (EN) + `README.de.md`, `AGENTS.md` auf Englisch, `CLAUDE.md`, `ARCHITECTURE.md`, MIT-`LICENSE`. Offen:
+  - **Rechtlich:** `capture-one-controls.json` (in der App) und `docs/capture-one-controls.md` sind aus Capture Ones `controls.xml` abgeleitet. Sicherer: nicht mitliefern, sondern beim Start aus der installierten Capture-One-App einlesen (siehe Risiken unten), dann beide Dateien aus dem Repo nehmen
+  - Bundle-ID `MD.Stellwerk` → z. B. `at.martindoersch.Stellwerk`
+  - Repo auf GitHub auf „Public" stellen, Beschreibung + Topics, Screenshot/GIF fürs README (vorher auf private Bilder prüfen)
+  - Optional: signierte, notarisierte Version als Download (Developer ID, GitHub Releases)
 
 ## Erledigt
 
