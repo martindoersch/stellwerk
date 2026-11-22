@@ -16,7 +16,7 @@ Input adapters          Bridge (menu bar app)          Output adapters
 Loupedeck+     ─┐                                    ┌─ Capture One  (Tangent protocol, Stellwerk acts as the hub)
 TourBox Elite+ ─┼──►  unified actions  ──►           ├─ Any frontmost app (shortcuts, menu items)
 MIDI general   ─┤    "Exposure +0.05"                ├─ Lightroom Classic (planned: Lua plugin, LR SDK)
-Software surface┘                                    └─ Photomator (planned: shortcuts only)
+Software surface┘                                    └─ Photomator (on hold: no interface)
 ```
 
 ## Repository layout
@@ -88,8 +88,9 @@ Software surface┘                                    └─ Photomator (planne
 ### Lightroom Classic (planned)
 - Official route: `.lrplugin` with `LrDevelopController` + `LrSocket` (local TCP to the bridge). Check **tangent-lightroom** (crazyscot, GitHub) first: it might make LR a Tangent client too. MIDI2LR is the mature open-source reference.
 
-### Photomator (planned)
-- No plugin API: shortcuts, Shortcuts app, Accessibility only.
+### Photomator (on hold)
+- Checked 2026-11-22 on Photomator 3.4.15 (bundle ID `com.pixelmatorteam.pixelmator.touch.x.photo`): **no control interface.** AppleScript dictionary is only the generic Standard Suite (open/save/close/windows), no Shortcuts actions (no `Metadata.appintents` in the bundle), URL scheme `photomator://` with no apparent commands (likely just the "Add to Photomator" extension handoff), no Tangent/MIDI, keyboard shortcuts only for tools and not customizable.
+- Only remaining route for dials: Accessibility API (adjust the sidebar sliders directly). Untested whether Photomator exposes them cleanly.
 
 ## Prior art (researched 2026-11)
 

@@ -118,7 +118,7 @@ Stand: 2026-11-21 · Beschreibung und Technik in `AGENTS.md`
 - [ ] Zuerst **tangent-lightroom** (crazyscot) prüfen: Macht es Lightroom zum Tangent-Client, braucht unsere Bridge keinen eigenen LR-Adapter
 - [ ] Zwischenlösung: MIDI2LR direkt mit Loupedeck+ testen
 - [ ] Sonst eigenes `.lrplugin` mit `LrSocket` und `LrDevelopController` (Vorbild: `logiplugin.lrplugin` lesen)
-- [ ] Photomator über Tastenkürzel und Kurzbefehle
+- [ ] Photomator über Tastenkürzel und Kurzbefehle – **zurückgestellt** (2026-11-22). Geprüft an Photomator 3.4.15: keine Steuer-Schnittstelle. AppleScript nur Standard-Suite (öffnen/sichern/schließen), keine Kurzbefehle-Aktionen (kein `Metadata.appintents`), URL-Schema `photomator://` ohne erkennbare Befehle, kein Tangent/MIDI, Tastenkürzel nur für Werkzeuge, nicht anpassbar. Einziger Weg für Regler wäre die Bedienungshilfen-API (Schieberegler in der Seitenleiste direkt verstellen) – ungetestet
 - [ ] Optional: DaVinci Resolve (kann ebenfalls Tangent)
 
 ## Hilfsmittel (Vorschläge aus der Recherche, 2026-11-21)
